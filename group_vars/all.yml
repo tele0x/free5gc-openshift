@@ -1,0 +1,32 @@
+# It's recommended to use go 1.14.4 to compile Free5GC
+---
+go:
+  package: go1.14.4.linux-amd64.tar.gz
+  url: "https://dl.google.com/go/"
+
+free5gc:
+  repo: https://github.com/free5gc/free5gc.git
+  version: v3.0.3
+
+# base 5G NFs
+nf_nodes:
+  - nrf
+  - pcf
+  - smf
+  - ausf
+  - udm
+  - udr
+  - amf
+  - n3iwf
+
+# For this PoC will keep user and pwd in clear but you should use a vault for sensitive information
+openshift:
+  api_url: https://api.lama.homelab.us:6443
+  username: tele
+  password: lama
+  # this is the host interface on the worker where we bridge our additional network
+  host_ifname: "ens3"
+  # namespace
+  namespace: 5gcore
+
+# Network mapping

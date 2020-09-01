@@ -1,0 +1,123 @@
+# Ansible playbook to build images for 5G Core NFs using Free5GC
+# 
+
+---
+- name: Build {{ cnf|upper }} NF
+  hosts: localhost
+  
+  vars:
+    cnf: "{{ lookup('env', 'CNF') }}"
+    # UPF is run differently
+    # For all-in-one image we use a dummy command
+    cnf_run_cmd: 
+      "{{ '/bin/sh -c \"sleep 2000000\"' if cnf == 'all-in-one' else '/free5gc/bin/'+cnf 
+      if cnf  != 'upf' else '/free5gc/src/upf/build/bin/free5gc-upfd -f /free5gc/src/upf/build/config/upfcfg.yaml' }}"
+
+    ansible_bender:
+      base_image: registry.access.redhat.com/ubi8/ubi 
+      target_image:
+        labels:
+          built-by: "Federico Rossi (ferossi@redhat.com)"
+        name: "{{ cnf }}-cnf"
+        cmd: "{{ cnf_run_cmd }}"
+  
+  environment:
+      GOPATH: /go
+      GOROOT: /usr/local/go
+      PATH: "{{ ansible_env.PATH }}:/usr/local/go/bin"
+  
+  tasks:
+  - name: Install base packages
+    yum:
+      update_cache: no
+      disable_plugin: subscription-manager
+      name:
+        - wget
+        - git
+        - procps-ng
+        - iputils
+      state: present
+
+  # UPF has a different build process
+  - name: Install packages to compile UPF
+    yum:
+      # To keep this portable we disable subscription-manager
+      disable_plugin: subscription-manager
+      name:
+        - make
+        - gcc
+        - gcc-c++
+        - cmake
+        - libyaml
+        - pkgconfig
+        - autoconf
+        - automake
+        - libmnl
+        - libtool
+        - iproute
+        # The following dev tools are not available on UBI-8 default repos (subscription-manager registration is required to add non-UBI repos)
+        # For now will just install missing packages from CentOS 8 mirror
+        - http://mirror.centos.org/centos/8/PowerTools/x86_64/os/Packages/libmnl-devel-1.0.4-6.el8.x86_64.rpm
+        - http://mirror.centos.org/centos/8/PowerTools/x86_64/os/Packages/libyaml-devel-0.1.7-5.el8.x86_64.rpm
+      state: present
+    when: cnf == 'upf' or cnf == 'all-in-one'
+
+  # Install GO
+  - name: Download GO
+    get_url: 
+      url: "{{ go.url }}{{ go.package }}"
+      dest: /tmp/
+  - name: Uncompress GO
+    unarchive:
+      src: "/tmp/{{ go.package }}"
+      dest: /usr/local
+      remote_src: yes
+  - name: Delete GO package
+    file:
+      path: "/tmp/{{ go.package }}"
+      state: absent
+
+  - name: Get Free5GC source
+    git:
+       repo: "{{ free5gc.repo }}"
+       version: "{{ free5gc.version }}"
+       recursive: yes
+       dest: /free5gc
+    # One of the submodule in free5gc fails, we can ignore the error
+    ignore_errors: True 
+  - name: Create required directories
+    file:  
+      path: "{{ item }}"
+      state: directory
+    loop:
+      - /go/bin
+      - /go/pkg
+      - /go/src
+      - /free5gc/src/upf/build
+ 
+  - name: GO modules dependencies
+    shell: /usr/local/go/bin/go mod download
+    args:
+      chdir: /free5gc
+ 
+  # Compile individual NF
+  - name: Compile {{ cnf|upper }}
+    shell: /usr/local/go/bin/go build -o /free5gc/bin/{{ cnf }} -x /free5gc/src/{{ cnf }}/{{ cnf }}.go
+    args:
+      chdir: /free5gc
+    when: cnf != 'upf' and cnf != 'all-in-one'
+  
+  # Compile all available NFs excluding the UPF
+  - name: Compile all NFs
+    shell: /usr/local/go/bin/go build -o /free5gc/bin/{{ item }} -x /free5gc/src/{{ item }}/{{ item }}.go
+    args:
+      chdir: /free5gc
+    loop: "{{ nodes.keys() | list }}"
+    when: item != 'upf' and item != 'mongo' and cnf == 'all-in-one' and cnf != 'upf'
+  
+  - name: Compile UPF
+    shell: cmake .. && make
+    args:
+      chdir: /free5gc/src/upf/build
+    when: cnf == 'upf' or cnf == 'all-in-one'
+  
