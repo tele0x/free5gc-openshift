@@ -25,6 +25,8 @@ case "$1" in
 		;;
 
 	*)
-		echo "Usage: $0 [ all-in-one | all | nrf | pcf | smf | ausf | udm | udr | amf | n3iwf | upf ]"
+		echo -e "Usage: $0 [all-in-one|all|nrf|pcf|smf|ausf|udm|udr|amf|n3iwf|upf]"
+		echo -e "\n\tall-in-one: One single image with all the components compiled"
+		echo -e "\tall: All components as individual images\n"
 		;;
 esac

@@ -8,17 +8,6 @@ free5gc:
   repo: https://github.com/free5gc/free5gc.git
   version: v3.0.3
 
-# base 5G NFs
-nf_nodes:
-  - nrf
-  - pcf
-  - smf
-  - ausf
-  - udm
-  - udr
-  - amf
-  - n3iwf
-
 # For this PoC will keep user and pwd in clear but you should use a vault for sensitive information
 openshift:
   api_url: https://api.lama.homelab.us:6443
@@ -26,7 +15,68 @@ openshift:
   password: lama
   # this is the host interface on the worker where we bridge our additional network
   host_ifname: "ens3"
-  # namespace
   namespace: 5gcore
 
-# Network mapping
+# Due to a limitation I have to define individual ports so that I can use them where I need integer values in my k8s definition
+# Jinja2 (even when using filter int) always returns a string, this was fixed in ansible but currently it supports only individual variables and not nested structure
+# A workaround will be to use a j2 template, but I wanted to keep the yaml for k8s without having to create a json template
+amf_port: 29518
+ausf_port: 29509
+nrf_port: 29510
+nssf_port: 29531
+pcf_port: 29507
+smf_port: 29502
+udm_port: 29503
+udr_port: 29504
+mongo_port: 27017
+
+nodes:
+  amf:
+    ip: "192.168.5.10"
+    mac: "CA:FE:C0:FF:EE:10"
+    port: "{{ amf_port }}"
+
+  ausf:
+    ip: "192.168.5.11"
+    mac: "CA:FE:C0:FF:EE:11"
+    port: "{{ ausf_port }}"
+  
+  nrf:
+    ip: "192.168.5.12"
+    mac: "CA:FE:C0:FF:EE:12"
+    port: "{{ nrf_port }}"
+  
+  nssf:
+    ip: "192.168.5.13"
+    mac: "CA:FE:C0:FF:EE:13"
+    port: "{{ nssf_port }}"
+
+  pcf:
+    ip: "192.168.5.14"
+    mac: "CA:FE:C0:FF:EE:14"
+    port: "{{ pcf_port }}"
+
+  smf:
+    ip: "192.168.5.15"
+    mac: "CA:FE:C0:FF:EE:15"
+    port: "{{ smf_port }}"
+
+  udm:
+    ip: "192.168.5.16"
+    mac: "CA:FE:C0:FF:EE:16"
+    port: "{{ udm_port }}"
+
+  udr:
+    ip: "192.168.5.17"
+    mac: "CA:FE:C0:FF:EE:17"
+    port: "{{ udr_port }}"
+
+  upf:
+    ip: "192.168.5.18"
+    mac: "CA:FE:C0:FF:EE:18"
+
+  mongo:
+    ip: "192.168.5.19"
+    mac: "CA:FE:C0:FF:EE:19"
+    port: "{{ mongo_port }}"
+
