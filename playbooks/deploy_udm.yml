@@ -1,0 +1,132 @@
+# 
+# Deploy UDM
+---
+- hosts: localhost
+  vars:
+    add_network: 
+          '[{ "name": "5g-net", 
+          "ips": [ "{{ nodes.udm.ip }}/24" ],
+          "mac": "{{ nodes.udm.mac }}"
+          }]'
+  tasks:
+  - name: Login to OCP cluster
+    k8s_auth:
+      host: "{{ openshift.api_url }}"
+      username: "{{ openshift.username }}"
+      password: "{{ openshift.password }}"
+      validate_certs: no
+    register: k8s_auth_result
+
+  - name: Create UDM config map
+    k8s:
+      state: present
+      apply: yes
+      host: "{{ openshift.api_url }}" 
+      api_key: "{{ k8s_auth_result.k8s_auth.api_key }}"
+      validate_certs: no
+      definition:
+        apiVersion: v1
+        kind: ConfigMap
+        metadata:
+          name: udm-config
+          namespace: "{{ openshift.namespace }}"
+        data:
+          udmcfg.conf: |
+            info:
+              version: 3.0.1
+              description: UDM initial local configuration
+
+            configuration:
+              serviceNameList:
+                - nudm-sdm
+                - nudm-uecm
+                - nudm-ueau
+                - nudm-ee
+                - nudm-pp
+              sbi:
+                scheme: https
+                ipv4Addr: {{ nodes.udm.ip }}
+                port: {{ udm_port }}
+                tls:
+                  log: free5gc/udmsslkey.log
+                  pem: free5gc/support/TLS/udm.pem
+                  key: free5gc/support/TLS/udm.key
+
+              udrclient:
+                scheme: https
+                ipv4Addr: {{ nodes.udr.ip }}
+                port: {{ udr_port }}
+
+              nrfclient:
+                scheme: https
+                ipv4Addr: {{ nodes.nrf.ip }}
+                port: {{ nrf_port }}
+              nrfUri: https://{{ nodes.nrf.ip }}:{{ nrf_port }}
+
+              # test data set from TS33501-f60 Annex C.4
+              # udmProfileAHNPublicKey: 5a8d38864820197c3394b92613b20b91633cbd897119273bf8e4a6f4eec0a650
+              # udmProfileAHNPrivateKey: c53c22208b61860b06c62e5406a7b330c2b577aa5558981510d128247d38bd1d
+              # udmProfileBHNPublicKey: 0472DA71976234CE833A6907425867B82E074D44EF907DFB4B3E21C1C2256EBCD15A7DED52FCBB097A4ED250E036C7B9C8C7004C4EEDC4F068CD7BF8D3F900E3B4
+              # udmProfileBHNPrivateKey: F1AB1074477EBCC7F554EA1C5FC368B1616730155E0041AC447D6301975FECDA
+              keys:
+                udmProfileAHNPublicKey: 5a8d38864820197c3394b92613b20b91633cbd897119273bf8e4a6f4eec0a650
+                udmProfileAHNPrivateKey: c53c22208b61860b06c62e5406a7b330c2b577aa5558981510d128247d38bd1d
+                udmProfileBHNPublicKey: 0472DA71976234CE833A6907425867B82E074D44EF907DFB4B3E21C1C2256EBCD15A7DED52FCBB097A4ED250E036C7B9C8C7004C4EEDC4F068CD7BF8D3F900E3B4
+                udmProfileBHNPrivateKey: F1AB1074477EBCC7F554EA1C5FC368B1616730155E0041AC447D6301975FECDA        
+
+  - name: Deploy UDM CNF
+    k8s:
+      state: present
+      apply: yes
+      host: "{{ openshift.api_url }}" 
+      api_key: "{{ k8s_auth_result.k8s_auth.api_key }}"
+      validate_certs: no
+      definition:
+        apiVersion: v1
+        kind: Pod
+        metadata:
+          name: udm
+          namespace: "{{ openshift.namespace }}"
+          annotations:
+            k8s.v1.cni.cncf.io/networks: "{{ add_network | to_json }}"
+        spec:
+          containers:
+          - name: udm
+            image: quay.io/ferossi/free5gc-openshift
+            command:
+              - /free5gc/bin/./udm
+            ports:
+              - containerPort: "{{ udm_port }}"
+            volumeMounts:
+              - name: conf
+                mountPath: /free5gc/config/udmcfg.conf
+                subPath: udmcfg.conf
+          volumes:
+            - name: conf
+              configMap:
+                name: udm-config
+                items:
+                - key: udmcfg.conf
+                  path: udmcfg.conf
+
+  - name: Create UDM service
+    k8s:
+      state: present
+      apply: yes
+      host: "{{ openshift.api_url }}"
+      api_key: "{{ k8s_auth_result.k8s_auth.api_key }}"
+      validate_certs: no
+      definition:
+        kind: Service
+        apiVersion: v1
+        metadata:
+          name: udm-service
+          namespace: "{{ openshift.namespace }}"
+        spec:
+          selector:
+            app: udm
+          ports:
+          - protocol: TCP
+            targetPort: "{{ udm_port }}"
+            port: "{{ udm_port }}"
+

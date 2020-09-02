@@ -1,0 +1,110 @@
+# 
+# Deploy NRF
+---
+- hosts: localhost
+  vars:
+    add_network: 
+    add_network: 
+          '[{ "name": "5g-net", 
+          "ips": [ "{{ nodes.nrf.ip }}/24" ],
+          "mac": "{{ nodes.nrf.mac }}"
+          }]'
+  tasks:
+  - name: Login to OCP cluster
+    k8s_auth:
+      host: "{{ openshift.api_url }}"
+      username: "{{ openshift.username }}"
+      password: "{{ openshift.password }}"
+      validate_certs: no
+    register: k8s_auth_result
+
+  - name: Create NRF config map
+    k8s:
+      state: present
+      apply: yes
+      host: "{{ openshift.api_url }}" 
+      api_key: "{{ k8s_auth_result.k8s_auth.api_key }}"
+      validate_certs: no
+      definition:
+        apiVersion: v1
+        kind: ConfigMap
+        metadata:
+          name: nrf-config
+          namespace: "{{ openshift.namespace }}"
+        data:
+          nrfcfg.conf: |
+            info:
+              version: 3.0.3
+              description: NRF initial local configuration
+
+            configuration:
+              MongoDBName: "free5gc"
+              MongoDBUrl: "mongodb://{{ nodes.mongo.ip }}:{{ nodes.mongo.port }}"
+              DefaultServiceIP: "{{ nodes.nrf.ip }}"
+              sbi:
+                scheme: https
+                ipv4Addr: "{{ nodes.nrf.ip }}"
+                port: {{ nrf_port }}
+              DefaultPlmnId:
+                mcc: "208"
+                mnc: "93"
+              serviceNameList:
+                - nnrf-nfm
+                - nnrf-disc
+
+  - name: Deploy NRF CNF
+    k8s:
+      state: present
+      apply: yes
+      host: "{{ openshift.api_url }}" 
+      api_key: "{{ k8s_auth_result.k8s_auth.api_key }}"
+      validate_certs: no
+      definition:
+        apiVersion: v1
+        kind: Pod
+        metadata:
+          name: nrf
+          namespace: "{{ openshift.namespace }}"
+          annotations:
+            k8s.v1.cni.cncf.io/networks: "{{ add_network | to_json }}"
+        spec:
+          containers:
+          - name: nrf
+            image: quay.io/ferossi/free5gc-openshift
+            command:
+              - /free5gc/bin/./nrf
+            ports:
+              - containerPort: "{{ nrf_port }}"
+            volumeMounts:
+              - name: conf
+                mountPath: /free5gc/config/nrfcfg.conf
+                subPath: nrfcfg.conf
+          volumes:
+            - name: conf
+              configMap:
+                name: nrf-config
+                items:
+                - key: nrfcfg.conf
+                  path: nrfcfg.conf
+
+  - name: Create NRF service
+    k8s:
+      state: present
+      apply: yes
+      host: "{{ openshift.api_url }}"
+      api_key: "{{ k8s_auth_result.k8s_auth.api_key }}"
+      validate_certs: no
+      definition:
+        kind: Service
+        apiVersion: v1
+        metadata:
+          name: nrf-service
+          namespace: "{{ openshift.namespace }}"
+        spec:
+          selector:
+            app: nrf
+          ports:
+          - protocol: TCP
+            targetPort: "{{ nrf_port }}"
+            port: "{{ nrf_port }}"
+
