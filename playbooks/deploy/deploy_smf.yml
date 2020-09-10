@@ -1,0 +1,115 @@
+# 
+# Deploy SMF
+---
+- hosts: localhost
+  vars:
+    add_network: 
+          '[{ "name": "5g-net", 
+          "ips": [ "{{ nodes.smf.ip }}/24" ],
+          "mac": "{{ nodes.smf.mac }}"
+          }]'
+  tasks:
+  - name: Login to OCP cluster
+    k8s_auth:
+      host: "{{ openshift.api_url }}"
+      username: "{{ openshift.username }}"
+      password: "{{ openshift.password }}"
+      validate_certs: no
+    register: k8s_auth_result
+
+  - name: Create SMF config map
+    k8s:
+      state: present
+      apply: yes
+      host: "{{ openshift.api_url }}" 
+      api_key: "{{ k8s_auth_result.k8s_auth.api_key }}"
+      validate_certs: no
+      definition:
+        apiVersion: v1
+        kind: ConfigMap
+        metadata:
+          name: smf-config
+          namespace: "{{ openshift.namespace }}"
+        data:
+          smfcfg.conf: |
+            info:
+              version: 3.0.1
+              description: SMF initial local configuration
+
+            configuration:
+              smfName: SMF
+              sbi:
+                scheme: https
+                ipv4Addr: {{ nodes.smf.ip }}
+                port: {{ smf_port }}
+                tls:
+                  key: free5gc/support/TLS/smf.key
+                  pem: free5gc/support/TLS/smf.pem
+              serviceNameList:
+                - nsmf-pdusession
+                - nsmf-event-exposure
+                - nsmf-oam
+              snssai_info:
+                - sNssai:
+                    sst: 1
+                    sd: 010203
+                  dnnSmfInfoList:
+                    - dnn: internet
+                - sNssai:
+                    sst: 1
+                    sd: 112233
+                  dnnSmfInfoList:
+                    - dnn: internet                
+              pfcp:
+                addr: {{ nodes.smf.ip }}
+              userplane_information:
+                up_nodes:
+                  gNB1:
+                    type: AN
+                    an_ip: 192.188.2.3
+                  UPF:
+                    type: UPF
+                    node_id:  {{ nodes.upf.ip }}
+                    up_resource_ip: {{ nodes.upf.ip }}    
+                links:
+                  - A: gNB1
+                    B: UPF        
+              ue_subnet: 60.60.0.0/16
+              nrfUri: https://{{ nodes.nrf.ip }}:{{ nrf_port }}           
+
+
+  - name: Deploy SMF CNF
+    k8s:
+      state: present
+      apply: yes
+      host: "{{ openshift.api_url }}" 
+      api_key: "{{ k8s_auth_result.k8s_auth.api_key }}"
+      validate_certs: no
+      definition:
+        apiVersion: v1
+        kind: Pod
+        metadata:
+          name: smf
+          namespace: "{{ openshift.namespace }}"
+          annotations:
+            k8s.v1.cni.cncf.io/networks: "{{ add_network | to_json }}"
+        spec:
+          containers:
+          - name: smf
+            image: quay.io/ferossi/free5gc-openshift
+            command:
+              - /free5gc/bin/./smf
+            ports:
+              - containerPort: "{{ smf_port }}"
+            volumeMounts:
+              - name: conf
+                mountPath: /free5gc/config/smfcfg.conf
+                subPath: smfcfg.conf
+          volumes:
+            - name: conf
+              configMap:
+                name: smf-config
+                items:
+                - key: smfcfg.conf
+                  path: smfcfg.conf
+            

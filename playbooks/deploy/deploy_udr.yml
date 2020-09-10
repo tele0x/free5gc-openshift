@@ -39,7 +39,7 @@
             configuration:
               sbi:
                 scheme: https
-                ipv4Addr: "{{ nodes.udr.ip }}"
+                ipv4Addr: {{ nodes.udr.ip }}
                 port: {{ udr_port }}
               mongodb:
                 name: free5gc

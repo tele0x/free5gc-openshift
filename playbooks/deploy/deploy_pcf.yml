@@ -1,13 +1,12 @@
 # 
-# Deploy NRF
+# Deploy PCF
 ---
 - hosts: localhost
   vars:
     add_network: 
-    add_network: 
           '[{ "name": "5g-net", 
-          "ips": [ "{{ nodes.nrf.ip }}/24" ],
-          "mac": "{{ nodes.nrf.mac }}"
+          "ips": [ "{{ nodes.pcf.ip }}/24" ],
+          "mac": "{{ nodes.pcf.mac }}"
           }]'
   tasks:
   - name: Login to OCP cluster
@@ -18,7 +17,7 @@
       validate_certs: no
     register: k8s_auth_result
 
-  - name: Create NRF config map
+  - name: Create PCF config map
     k8s:
       state: present
       apply: yes
@@ -29,30 +28,34 @@
         apiVersion: v1
         kind: ConfigMap
         metadata:
-          name: nrf-config
+          name: pcf-config
           namespace: "{{ openshift.namespace }}"
         data:
-          nrfcfg.conf: |
+          pcfcfg.conf: |
             info:
-              version: 3.0.3
-              description: NRF initial local configuration
+              version: 3.0.1
+              description: PCF initial local configuration
 
             configuration:
-              MongoDBName: "free5gc"
-              MongoDBUrl: "mongodb://{{ nodes.mongo.ip }}:{{ nodes.mongo.port }}"
-              DefaultServiceIP: "{{ nodes.nrf.ip }}"
+              pcfName: PCF
               sbi:
                 scheme: https
-                ipv4Addr: "{{ nodes.nrf.ip }}"
-                port: {{ nrf_port }}
-              DefaultPlmnId:
-                mcc: "208"
-                mnc: "93"
-              serviceNameList:
-                - nnrf-nfm
-                - nnrf-disc
+                ipv4Addr: {{ nodes.pcf.ip }}
+                port: {{ pcf_port }}
+              timeFormat: 2020-01-01 10:10:10
+              defaultBdtRefId: BdtPolicyId-
+              nrfUri: https://{{ nodes.nrf.ip }}:{{ nrf_port }}
+              serviceList:
+                - serviceName: npcf-am-policy-control
+                - serviceName: npcf-smpolicycontrol
+                  suppFeat: 3fff
+                - serviceName: npcf-bdtpolicycontrol
+                - serviceName: npcf-policyauthorization
+                  suppFeat: 3
+                - serviceName: npcf-eventexposure
+                - serviceName: npcf-ue-policy-control
 
-  - name: Deploy NRF CNF
+  - name: Deploy PCF CNF
     k8s:
       state: present
       apply: yes
@@ -63,31 +66,31 @@
         apiVersion: v1
         kind: Pod
         metadata:
-          name: nrf
+          name: pcf
           namespace: "{{ openshift.namespace }}"
           annotations:
             k8s.v1.cni.cncf.io/networks: "{{ add_network | to_json }}"
         spec:
           containers:
-          - name: nrf
+          - name: pcf
             image: quay.io/ferossi/free5gc-openshift
             command:
-              - /free5gc/bin/./nrf
+              - /free5gc/bin/./pcf
             ports:
-              - containerPort: "{{ nrf_port }}"
+              - containerPort: "{{ pcf_port }}"
             volumeMounts:
               - name: conf
-                mountPath: /free5gc/config/nrfcfg.conf
-                subPath: nrfcfg.conf
+                mountPath: /free5gc/config/pcfcfg.conf
+                subPath: pcfcfg.conf
           volumes:
             - name: conf
               configMap:
-                name: nrf-config
+                name: pcf-config
                 items:
-                - key: nrfcfg.conf
-                  path: nrfcfg.conf
+                - key: pcfcfg.conf
+                  path: pcfcfg.conf
 
-  - name: Create NRF service
+  - name: Create PCF service
     k8s:
       state: present
       apply: yes
@@ -98,13 +101,13 @@
         kind: Service
         apiVersion: v1
         metadata:
-          name: nrf-service
+          name: pcf-service
           namespace: "{{ openshift.namespace }}"
         spec:
           selector:
-            app: nrf
+            app: pcf
           ports:
           - protocol: TCP
-            targetPort: "{{ nrf_port }}"
-            port: "{{ nrf_port }}"
+            targetPort: "{{ pcf_port }}"
+            port: "{{ pcf_port }}"
 

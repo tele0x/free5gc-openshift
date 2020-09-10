@@ -19,7 +19,7 @@ openshift:
 
 # Due to a limitation I have to define individual ports so that I can use them where I need integer values in my k8s definition
 # Jinja2 (even when using filter int) always returns a string, this was fixed in ansible but currently it supports only individual variables and not nested structure
-# A workaround will be to use a j2 template, but I wanted to keep the yaml for k8s without having to create a json template
+# A workaround will be to use a j2 template
 amf_port: 29518
 ausf_port: 29509
 nrf_port: 29510
