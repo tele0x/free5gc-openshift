@@ -15,7 +15,7 @@ case "$1" in
 		export CNF=$1
 		ansible-playbook -i localhost playbooks/initialize_network.yml
 		echo -e "Deploy 5G Core NF: `echo $1 | tr '[a-z]' '[A-Z]'`"
-		ansible-playbook -i localhost playbooks/deploy/deploy_$nf.yml
+		ansible-playbook -i localhost playbooks/deploy/deploy_$CNF.yml
 		;;
 
 	*)
