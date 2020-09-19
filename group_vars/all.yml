@@ -14,7 +14,7 @@ openshift:
   username: tele
   password: lama
   # this is the host interface on the worker where we bridge our additional network
-  host_ifname: "ens3"
+  host_ifname: ens3
   namespace: 5gcore
 
 # Due to a limitation I have to define individual ports so that I can use them where I need integer values in my k8s definition
@@ -30,53 +30,66 @@ udm_port: 29503
 udr_port: 29504
 mongo_port: 27017
 
+default_image: quay.io/ferossi/free5gc-openshift
+
 nodes:
   amf:
     ip: "192.168.5.10"
     mac: "CA:FE:C0:FF:EE:10"
     port: "{{ amf_port }}"
+    image: "{{ default_image }}"
 
   ausf:
     ip: "192.168.5.11"
     mac: "CA:FE:C0:FF:EE:11"
     port: "{{ ausf_port }}"
-  
+    image: "{{ default_image }}"
+
   nrf:
     ip: "192.168.5.12"
     mac: "CA:FE:C0:FF:EE:12"
     port: "{{ nrf_port }}"
+    image: "{{ default_image }}"
   
   nssf:
     ip: "192.168.5.13"
     mac: "CA:FE:C0:FF:EE:13"
     port: "{{ nssf_port }}"
+    image: "{{ default_image }}"
 
   pcf:
     ip: "192.168.5.14"
     mac: "CA:FE:C0:FF:EE:14"
     port: "{{ pcf_port }}"
+    image: "{{ default_image }}"
 
   smf:
     ip: "192.168.5.15"
     mac: "CA:FE:C0:FF:EE:15"
     port: "{{ smf_port }}"
+    image: "{{ default_image }}"
 
   udm:
     ip: "192.168.5.16"
     mac: "CA:FE:C0:FF:EE:16"
     port: "{{ udm_port }}"
+    image: "{{ default_image }}"
 
   udr:
     ip: "192.168.5.17"
     mac: "CA:FE:C0:FF:EE:17"
     port: "{{ udr_port }}"
+    image: "{{ default_image }}"
 
   upf:
     ip: "192.168.5.18"
     mac: "CA:FE:C0:FF:EE:18"
+    image: "{{ default_image }}"
 
   mongo:
     ip: "192.168.5.19"
     mac: "CA:FE:C0:FF:EE:19"
     port: "{{ mongo_port }}"
+    image: "{{ default_image }}"
+
 
