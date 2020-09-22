@@ -104,7 +104,7 @@
         spec:
           containers:
           - name: amf
-            image: quay.io/ferossi/free5gc-openshift
+            image: "{{ nodes.amf.image }}"
             command:
               - /free5gc/bin/./amf
             ports:

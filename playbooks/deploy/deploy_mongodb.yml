@@ -44,7 +44,6 @@
             ports:
               - containerPort: "{{ mongo_port }}"
 
-
   - name: Create MongoDB service
     k8s:
       state: present

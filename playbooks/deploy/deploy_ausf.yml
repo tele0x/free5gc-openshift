@@ -69,7 +69,7 @@
         spec:
           containers:
           - name: ausf
-            image: quay.io/ferossi/free5gc-openshift
+            image: "{{ nodes.ausf.image }}"
             command:
               - /free5gc/bin/./ausf
             ports:

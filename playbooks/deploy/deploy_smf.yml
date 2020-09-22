@@ -96,7 +96,7 @@
         spec:
           containers:
           - name: smf
-            image: quay.io/ferossi/free5gc-openshift
+            image: "{{ nodes.smf.image }}"
             command:
               - /free5gc/bin/./smf
             ports:

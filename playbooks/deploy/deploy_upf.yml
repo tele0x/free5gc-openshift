@@ -70,7 +70,7 @@
         spec:
           containers:
           - name: upf
-            image: quay.io/ferossi/free5gc-openshift
+            image: "{{ nodes.upf.image }}"
             securityContext:
               capabilities:
                 add:

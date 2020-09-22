@@ -64,7 +64,7 @@
         spec:
           containers:
           - name: udr
-            image: quay.io/ferossi/free5gc-openshift
+            image: "{{ nodes.udr.image }}"
             command:
               - /free5gc/bin/./udr
             ports:
