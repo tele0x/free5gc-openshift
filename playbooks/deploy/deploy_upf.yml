@@ -25,83 +25,67 @@
       api_key: "{{ k8s_auth_result.k8s_auth.api_key }}"
       validate_certs: no
       definition:
-        apiVersion: kubevirt.io/v1alpha3
-        kind: VirtualMachine
-        metadata:
-          annotations:
-            kubevirt.io/latest-observed-api-version: v1alpha3
-            kubevirt.io/storage-observed-api-version: v1alpha3
-            name.os.template.kubevirt.io/silverblue32: Fedora 31 or higher
-          selfLink: /apis/kubevirt.io/v1alpha3/namespaces/default/virtualmachines/upf-vm
-          resourceVersion: '1297321'
-          name: upf-vm
-          namespace: 5gcore
-          labels:
-            app: upf-vm
-            os.template.kubevirt.io/silverblue32: 'true'
-            vm.kubevirt.io/template: fedora-server-large-v0.11.3
-            vm.kubevirt.io/template.namespace: openshift
-            vm.kubevirt.io/template.revision: '1'
-            vm.kubevirt.io/template.version: v0.11.3
-            workload.template.kubevirt.io/server: 'true'
-        spec:
-          running: true
-          template:
-            metadata:
-              creationTimestamp: null
-              labels:
-                kubevirt.io/domain: upf-vm
-                kubevirt.io/size: large
-                os.template.kubevirt.io/silverblue32: 'true'
-                vm.kubevirt.io/name: upf-vm
-                workload.template.kubevirt.io/server: 'true'
-            spec:
-              domain:
-                cpu:
-                  cores: 1
-                  sockets: 1
-                  threads: 1
-                devices:
-                  disks:
-                    - bootOrder: 1
-                      disk:
-                        bus: virtio
-                      name: containerdisk
-                    - disk:
-                        bus: virtio
-                      name: cloudinitdisk
-                  interfaces:
-                    - masquerade: {}
-                      model: virtio
-                      name: nic-0
-                    - bridge: {}
-              model: virtio
-              name: bridge-net1
-          networkInterfaceMultiqueue: true
-          rng: {}
-        machine:
-          type: pc-q35-rhel8.2.0
-        resources:
-          requests:
-            memory: 1Gi
-      evictionStrategy: LiveMigrate
-      hostname: upf-vm
-      networks:
-        - name: nic-0
-          pod: {}
-        - name: bridge-net1
-          multus:
-            networkName: bridge-net 
-      terminationGracePeriodSeconds: 180
-      volumes:
-        - containerDisk:
-                image: "{{ nodes.upf.image }}"
-          name: containerdisk
-        - cloudInitNoCloud:
-            userData: |-
-              #!/bin/bash
-              ifconfig enp2s0 {{ nodes.upf.ip }} netmask 255.255.255.0
-              sed -e 's/127.0.0.8/{{ nodes.upf.ip }}/g' -i /free5gc/src/upf/build/config/upfcfg.yaml
-              sed -e '/.*cidr.*/a \     \ natifname: enp1s0' -i /free5gc/src/upf/build/config/upfcfg.yaml
-              screen -d -m /free5gc/src/upf/build/bin/free5gc-upfd -f /free5gc/src/upf/build/config/upfcfg.yaml
-          name: cloudinitdisk
+         apiVersion: kubevirt.io/v1alpha3
+         kind: VirtualMachine
+         metadata:
+           name: upf-vm
+           namespace: "{{ openshift.namespace }}"
+           labels:
+             app: upf-vm
+         spec:
+           running: true
+           template:
+             metadata:
+               labels:
+                 kubevirt.io/domain: upf-vm
+                 vm.kubevirt.io/name: upf-vm
+             spec:
+               domain:
+                 cpu:
+                   cores: 1
+                   sockets: 1
+                   threads: 1
+                 devices:
+                   disks:
+                     - bootOrder: 1
+                       disk:
+                         bus: virtio
+                       name: containerdisk
+                     - disk:
+                         bus: virtio
+                       name: cloudinitdisk
+                   interfaces:
+                     - masquerade: {}
+                       model: virtio
+                       name: nic-0
+                     - bridge: {}
+                       model: virtio
+                       name: bridge-net1
+                   networkInterfaceMultiqueue: true
+                   rng: {}
+                 machine:
+                   type: pc-q35-rhel8.2.0
+                 resources:
+                   requests:
+                     memory: 1Gi
+               evictionStrategy: LiveMigrate
+               hostname: upf-vm
+               networks:
+                 - name: nic-0
+                   pod: {}
+                 - name: bridge-net1
+                   multus:
+                     networkName: bridge-net 
+               terminationGracePeriodSeconds: 180
+               volumes:
+                 - containerDisk:
+                         image: "{{ nodes.upf.image }}"
+                   name: containerdisk
+                 - cloudInitNoCloud:
+                     userData: |-
+                       #!/bin/bash
+                       ifconfig enp2s0 {{ nodes.upf.ip }} netmask 255.255.255.0
+                       sed -e 's/127.0.0.8/{{ nodes.upf.ip }}/g' -i /free5gc/src/upf/build/config/upfcfg.yaml
+                       sed -e '/.*cidr.*/a \     \ natifname: enp1s0' -i /free5gc/src/upf/build/config/upfcfg.yaml
+                       screen -d -m /free5gc/src/upf/build/bin/free5gc-upfd -f /free5gc/src/upf/build/config/upfcfg.yaml
+                   name: cloudinitdisk
