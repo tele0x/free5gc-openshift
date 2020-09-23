@@ -11,7 +11,7 @@ case "$1" in
 		done
 		;;
 
-	"mongodb" | "nrf" | "pcf" | "smf" | "ausf" | "udm" | "udr" | "amf" | "n3iwf" | "upf")
+	"mongodb" | "nrf" | "pcf" | "smf" | "ausf" | "nssf" | "udm" | "udr" | "amf" | "n3iwf" | "upf")
 		export CNF=$1
 		ansible-playbook -i localhost playbooks/initialize_network.yml
 		echo -e "Deploy 5G Core NF: `echo $1 | tr '[a-z]' '[A-Z]'`"
@@ -19,7 +19,7 @@ case "$1" in
 		;;
 
 	*)
-		echo -e "Usage: $0 [all|mongodb|nrf|pcf|smf|ausf|udm|udr|amf|n3iwf|upf]"
+		echo -e "Usage: $0 [all|mongodb|nrf|nssf|pcf|smf|ausf|udm|udr|amf|n3iwf|upf]"
 		echo -e "\nall: Deploy all components\n"
 		;;
 esac
