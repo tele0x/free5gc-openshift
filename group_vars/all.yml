@@ -13,7 +13,7 @@ openshift:
   api_url: https://api.lama.homelab.us:6443
   username: tele
   password: lama
-  # this is the host interface on the worker where we bridge our additional network
+  # this is the host interface on the worker node where we bridge our additional network
   host_ifname: ens3
   namespace: 5gcore
 
@@ -92,7 +92,7 @@ nodes:
     port: "{{ mongo_port }}"
     image: "{{ default_image }}"
 
-  simulator:
+  uesim:
     ip: "192.168.5.20"
     mac: "CA:FE:C0:FF:EE:20"
-    image: "{{ default_image }}"
+    image: quay.io/ferossi/free5gc-openshift-uesim

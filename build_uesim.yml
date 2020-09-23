@@ -1,0 +1,69 @@
+# Ansible playbook to build UE RAN simulator to run distributed testing using Free5GC
+# 
+
+---
+- name: Build UESIM
+  hosts: localhost
+  
+  vars:
+    ansible_bender:
+      base_image: registry.access.redhat.com/ubi8/ubi 
+      target_image:
+        labels:
+          built-by: "Federico Rossi (ferossi@redhat.com)"
+        name: "uesim"
+        cmd: "/bin/sh -c 'tail -f /dev/null'"
+  
+  environment:
+      GOPATH: /go
+      GOROOT: /usr/local/go
+      PATH: "{{ ansible_env.PATH }}:/usr/local/go/bin"
+  
+  tasks:
+  - name: Install base packages
+    yum:
+      update_cache: no
+      disable_plugin: subscription-manager
+      name:
+        - wget
+        - git
+        - procps-ng
+        - iputils
+      state: present
+
+  # Install GO
+  - name: Download GO
+    get_url: 
+      url: "{{ go.url }}{{ go.package }}"
+      dest: /tmp/
+  - name: Uncompress GO
+    unarchive:
+      src: "/tmp/{{ go.package }}"
+      dest: /usr/local
+      remote_src: yes
+  - name: Delete GO package
+    file:
+      path: "/tmp/{{ go.package }}"
+      state: absent
+
+  - name: Get distributed testing from forked Free5GC
+    git:
+       repo: https://github.com/tele0x/free5gc
+       version: distributed-testing
+       recursive: yes
+       dest: /free5gc
+    # One of the submodule in free5gc fails, we can ignore the error
+    ignore_errors: True 
+  - name: Create required directories
+    file:  
+      path: "{{ item }}"
+      state: directory
+    loop:
+      - /go/bin
+      - /go/pkg
+      - /go/src
+ 
+  - name: GO modules dependencies
+    shell: /usr/local/go/bin/go mod download
+    args:
+      chdir: /free5gc 

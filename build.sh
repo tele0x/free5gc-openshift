@@ -23,10 +23,15 @@ case "$1" in
 		echo -e "Build 5G Core NF: `echo $1 | tr '[a-z]' '[A-Z]'`"
 		$BENDER_CMD
 		;;
+	"uesim")
+		echo -e "Build UE RAN simulator"
+		ansible-bender build build_uesim.yml
+		;;
 
 	*)
-		echo -e "Usage: $0 [all-in-one|all|nrf|pcf|smf|ausf|nssf|udm|udr|amf|n3iwf|upf]"
+		echo -e "Usage: $0 [all-in-one|all|nrf|pcf|smf|ausf|nssf|udm|udr|amf|n3iwf|upf|uesim]"
 		echo -e "\nall-in-one: One single image with all the components compiled"
-		echo -e "\nall: All components as individual images\n"
+		echo -e "all: All components as individual images"
+		echo -e "uesim: Build UE RAN simulation image to run distributed testing of 5G NFs\n"
 		;;
 esac
