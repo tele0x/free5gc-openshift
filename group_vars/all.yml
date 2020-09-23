@@ -84,7 +84,7 @@ nodes:
   upf:
     ip: "192.168.5.18"
     mac: "CA:FE:C0:FF:EE:18"
-    image: "{{ default_image }}"
+    image: quay.io/ferossi/free5gc-openshift-upf:0.1
 
   mongo:
     ip: "192.168.5.19"
@@ -92,4 +92,7 @@ nodes:
     port: "{{ mongo_port }}"
     image: "{{ default_image }}"
 
-
+  simulator:
+    ip: "192.168.5.20"
+    mac: "CA:FE:C0:FF:EE:20"
+    image: "{{ default_image }}"
