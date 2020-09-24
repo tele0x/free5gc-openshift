@@ -12,7 +12,7 @@
         labels:
           built-by: "Federico Rossi (ferossi@redhat.com)"
         name: "uesim"
-        cmd: "/bin/sh -c 'tail -f /dev/null'"
+        cmd: "/bin/sh -c 'sleep 2000000'"
   
   environment:
       GOPATH: /go
@@ -29,6 +29,7 @@
         - git
         - procps-ng
         - iputils
+        - iproute
       state: present
 
   # Install GO
