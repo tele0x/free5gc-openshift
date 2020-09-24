@@ -9,11 +9,10 @@
           "mac": "{{ nodes.nssf.mac }}"
           }]'
   tasks:
-
-  - name: "Set stat for Workflow"
+  - name: Set stat for Workflow
     set_stats:
       data:
-        current_cnf: "NSSF"
+        current_cnf: NSSF
 
   - name: Login to OCP cluster
     k8s_auth:

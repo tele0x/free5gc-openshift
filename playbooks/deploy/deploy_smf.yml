@@ -9,6 +9,11 @@
           "mac": "{{ nodes.smf.mac }}"
           }]'
   tasks:
+  - name: Set stat for Workflow
+    set_stats:
+      data:
+        current_cnf: SMF
+
   - name: Login to OCP cluster
     k8s_auth:
       host: "{{ openshift.api_url }}"
