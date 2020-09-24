@@ -38,7 +38,7 @@
 
             configuration:
               MongoDBName: "free5gc"
-              MongoDBUrl: mongodb://mongodb-svc:{{ mongo_port }}
+              MongoDBUrl: mongodb://{{ nodes.mongo.ip }}:{{ mongo_port }}
               DefaultServiceIP: {{ nodes.nrf.ip }}
               sbi:
                 scheme: https
