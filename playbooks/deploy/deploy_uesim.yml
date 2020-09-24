@@ -56,9 +56,8 @@
         spec:
           containers:
           - name: uesim
-            image: "{{ nodes.pcf.image }}"
-            command:
-              - tail -f /dev/null
+            image: "{{ nodes.uesim.image }}"
+            command: [ "/bin/sh", "-c" , "sleep 200000" ]
             volumeMounts:
               - name: conf
                 mountPath: /free5gc/config/test/uesim.conf

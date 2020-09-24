@@ -95,4 +95,4 @@ nodes:
   uesim:
     ip: "192.168.5.20"
     mac: "CA:FE:C0:FF:EE:20"
-    image: quay.io/ferossi/free5gc-openshift-uesim
+    image: quay.io/ferossi/uesim
