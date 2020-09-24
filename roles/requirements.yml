@@ -1,2 +1,4 @@
-- src: https://github.com/ansible-collections/community.kubernetes
-  name: community.kubernetes
+---
+collections:
+  - name: community.kubernetes
+  version: 1.0.0
