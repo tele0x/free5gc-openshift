@@ -2,8 +2,6 @@
 # Check NFs registration, get variable from
 ---
 - hosts: localhost
-  vars:
-    current_cnf: 'NSSF'
   tasks:
   - name: Login to OCP cluster
     k8s_auth:
