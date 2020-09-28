@@ -85,7 +85,16 @@
                      userData: |-
                        #!/bin/bash
                        ifconfig enp2s0 {{ nodes.upf.ip }} netmask 255.255.255.0
+                       # Allow password based ssh
+                       sed -e 's/PasswordAuthentication no/PasswordAuthentication yes/g' -i /etc/ssh/sshd_config
+                       /etc/init.d/ssh restart
+                       # Configure UPF
                        sed -e 's/127.0.0.8/{{ nodes.upf.ip }}/g' -i /free5gc/src/upf/build/config/upfcfg.yaml
                        sed -e '/.*cidr.*/a \     \ natifname: enp1s0' -i /free5gc/src/upf/build/config/upfcfg.yaml
                        screen -d -m /free5gc/src/upf/build/bin/free5gc-upfd -f /free5gc/src/upf/build/config/upfcfg.yaml
+                       # Add NAT and packet forwarding between GTP tunnel and internet interface
+                       iptables -A FORWARD -i enp1s0 -j ACCEPT
+                       iptables -A FORWARD -i upfgtp0 -j ACCEPT
+                       iptables -t nat -A POSTROUTING -o enp1s0 -j MASQUERADE
+                       iptables -t nat -A POSTROUTING -o upfgtp0 -j MASQUERADE
                    name: cloudinitdisk
