@@ -6,10 +6,10 @@ UPF requires [GTP5G](https://github.com/PrinzOwO/gtp5g) kernel module that works
 ## Requirements
 
   - ansible (tested on version 2.10.0)
-  - podman
-  - buildah
-  - A running OpenShift cluster with reachable API
-  - Ansible Tower (optional)
+  - A running OpenShift cluster with reachable API URL
+  - [OpenShift Virtualization](https://docs.openshift.com/container-platform/4.5/virt/install/installing-virt-web.html) installed (Note: you don't need baremetal it works on nested-virtualization too)
+  - (optional) podman
+  - (optional) buildah
 
 ### Build Image (optional)
 
@@ -60,10 +60,32 @@ $ pip3 install -r requirements.txt
 $ ansible-galaxy collection community.kubernetes
 ```
 
-This should get you up and running with the environment, you can OCP cluster connection is working by running:
+This should get you up and running with the environment.
+Create or use an existing user in the cluster and assign cluster-admin role.
+
+```sh
+$ oc create clusterrolebinding registry-controller --clusterrole=cluster-admin --user=[username]
+```
+
+Edit *group_vars/all.yml* and change openshift *api_url*, *username* and *password*
+
+You can test OCP cluster connection is working by running:
 
 ```sh
 $ ./deploy.sh test
 ```
 
+At this point we must initialize the networking on OpenShift
 
+```sh
+$ ./deploy.sh init
+```
+
+Network initialization will execute the following:
+
+  - Create *5gcore* namespace. 
+  - Add additional network called *5g-net* to the cluster.
+  - Create *MachineConfig* to load SCTP kernel module on worker nodes.
+  - Create *NodeNetworkConfigurationPolicy*
+     - Add a new bridge interface to the worker node, this is used by the VM to attach the secondary network.
+  - Create *NetworkAttachmentDefinition* used in VM manifest to attach the VM to secondary network.
