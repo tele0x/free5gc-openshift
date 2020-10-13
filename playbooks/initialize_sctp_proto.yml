@@ -3,6 +3,9 @@
 ---
 - hosts: localhost
   tasks:
+  - name: Login
+    include_tasks: login.yml
+
   - name: Enable SCTP protocol in worker nodes
     k8s:
       state: present
@@ -16,6 +19,7 @@
         metadata:
           labels:
             machineconfiguration.openshift.io/role: worker
+            machineconfiguration.openshift.io/role: master,worker
           name: load-sctp-module
         spec:
           config:

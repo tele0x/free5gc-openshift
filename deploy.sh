@@ -14,7 +14,7 @@ case "$1" in
 	"all")
 		echo -e "Start 5G Core Deployment"
 		for nf in $VALID_CNFs; do
-			echo -e "Deploy 5G Core NFs: $VALID_CNFs"
+			echo -e "Deploy 5G Core NFs: $nf"
 			ansible-playbook -v -i localhost playbooks/deploy/deploy_$nf.yml
 			case "$nf" in
 				"upf")

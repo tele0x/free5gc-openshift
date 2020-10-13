@@ -4,13 +4,8 @@
 - hosts: localhost
 
   tasks:
-  - name: Login to OCP cluster
-    k8s_auth:
-      host: "{{ openshift.api_url }}"
-      username: "{{ openshift.username }}"
-      password: "{{ openshift.password }}"
-      validate_certs: no
-    register: k8s_auth_result
+  - name: Login
+    include_tasks: login.yml
 
   - name: Login to mongo pod and get {{ current_cnf }} instance ID
     community.kubernetes.k8s_exec:
