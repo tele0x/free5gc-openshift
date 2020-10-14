@@ -30,16 +30,16 @@ case "$1" in
 			ansible-playbook -v -i localhost playbooks/deploy/deploy_$nf.yml
 			case "$nf" in
 				"upf")
-					echo -e "Wait 30 seconds for UPF to boot up"
-					sleep 30
+					echo -e "Wait 1 minute for UPF to download image and boot up"
+					sleep 60
 					;;
 				"mongodb" | "nrf" | "udr")
-					echo -e "Wait 10 seconds"
-					sleep 10
+					echo -e "Wait 15 seconds"
+					sleep 15
 					;;
 				"amf" | "smf")
-					echo -e "Wait 5 seconds"
-					sleep 5
+					echo -e "Wait 10 seconds"
+					sleep 10
 					;;
 			esac
 		done
