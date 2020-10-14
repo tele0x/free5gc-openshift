@@ -1,5 +1,5 @@
 # 
-# Create new network on OpenShift
+# Create bridge and attachment network for CNV
 ---
 - hosts: localhost
   tasks:
@@ -20,8 +20,7 @@
           name: bridge-br1
         spec:
           nodeSelector:
-            #kubernetes.io/hostname: node6.ocp5g.example.com
-            node-role.kubernetes.io/worker: "true"
+            node-role.kubernetes.io/worker: ''
           desiredState:
             interfaces:
               - name: br1
@@ -50,6 +49,7 @@
         kind: NetworkAttachmentDefinition
         metadata:
           name: bridge-net
+          namespace: "{{ openshift.namespace }}"
           annotations:
             k8s.v1.cni.cncf.io/resourceName: bridge.network.kubevirt.io/br1
         spec:

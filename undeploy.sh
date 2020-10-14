@@ -5,7 +5,7 @@ VALID_CNFs="mongodb nrf pcf smf ausf udm udr amf nssf upf"
 case "$1" in
 	"all")
 		for nf in $VALID_CNFs; do
-			echo -e "Undeploy 5G Core NFs: $VALID_CNFs"
+			echo -e "Undeploy 5G Core NFs: $nf"
 			ansible-playbook -v -i localhost playbooks/undeploy/undeploy_$nf.yml
 		done
 		;;
