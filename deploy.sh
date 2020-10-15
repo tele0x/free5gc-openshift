@@ -14,14 +14,15 @@ case "$1" in
 		echo -e "Wait for NNCP configuration to be applied"
 		retry=0
 		until [ "$retry" -ge 5 ]; do
-			if oc get nncp bridge-br1 | grep SuccessfullyConfigured; then echo 'NNCP Ready!"' && break ; else echo -e '[$retry] NNCP not ready, retry in 15sec..' ; fi
+			if oc get nncp bridge-br1 | grep SuccessfullyConfigured; then echo 'NNCP Ready!' && break ; else echo -e "[$retry] NNCP not ready, retry in 15 sec.." ; fi
 			retry=$((retry+1))
 			sleep 15
 		done
 		ansible-playbook -i localhost playbooks/init/02_initialize_network.yml
 		ansible-playbook -i localhost playbooks/init/03_initialize_sctp_proto.yml
-		echo -e "SCTP module are being loaded on nodes, you can monitor the status with \"watch -n 3 'oc get nodes'\", wait until all nodes have been rebooted"
-		echo -e "You can run the following command to ensure the SCTP is loaded: \n"
+		echo -e "##########################################################\n"
+		echo -e "SCTP module is configured on nodes, you can monitor the status with \"watch -n 3 'oc get nodes'\", wait until all nodes have been rebooted"
+		echo -e "You can run the following command to ensure SCTP module is loaded: \n"
 		echo -e "for n in \$(oc get nodes | awk '{print \$1}' | grep -v NAME) ; do echo -e \"Check SCTP on node \$n\" ; ssh core@\$n lsmod | grep sctp ; done\n"
 		;;
 	"all")
@@ -35,8 +36,8 @@ case "$1" in
 					sleep 60
 					;;
 				"mongodb" | "nrf" | "udr")
-					echo -e "Wait 15 seconds"
-					sleep 15
+					echo -e "Wait 30 seconds"
+					sleep 30
 					;;
 				"amf" | "smf")
 					echo -e "Wait 10 seconds"
