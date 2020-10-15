@@ -39,12 +39,12 @@
             configuration:
               sbi:
                 scheme: https
-                ipv4Addr: {{ nodes.udr.ip }}
+                registerIPv4: udr-svc
                 port: {{ udr_port }}
               mongodb:
                 name: free5gc
-                url: mongodb://{{ nodes.mongo.ip }}:{{ mongo_port }}
-              nrfUri: https://{{ nodes.nrf.ip }}:{{ nrf_port }}
+                url: mongodb://mongodb-svc:{{ mongo_port }}
+              nrfUri: https://nrf-svc:{{ nrf_port }}
 
   - name: Deploy UDR CNF
     k8s:
@@ -59,6 +59,8 @@
         metadata:
           name: udr
           namespace: "{{ openshift.namespace }}"
+          labels:
+            app: udr
           annotations:
             k8s.v1.cni.cncf.io/networks: "{{ add_network | to_json }}"
         spec:
@@ -92,7 +94,7 @@
         kind: Service
         apiVersion: v1
         metadata:
-          name: udr-service
+          name: udr-svc
           namespace: "{{ openshift.namespace }}"
         spec:
           selector:

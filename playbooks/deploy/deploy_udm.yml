@@ -45,7 +45,7 @@
                 - nudm-pp
               sbi:
                 scheme: https
-                ipv4Addr: {{ nodes.udm.ip }}
+                registerIPv4: udm-srv
                 port: {{ udm_port }}
                 tls:
                   log: free5gc/udmsslkey.log
@@ -54,14 +54,14 @@
 
               udrclient:
                 scheme: https
-                ipv4Addr: {{ nodes.udr.ip }}
+                ipv4Addr: udr-svc
                 port: {{ udr_port }}
 
               nrfclient:
                 scheme: https
-                ipv4Addr: {{ nodes.nrf.ip }}
+                ipv4Addr: nrf-svc
                 port: {{ nrf_port }}
-              nrfUri: https://{{ nodes.nrf.ip }}:{{ nrf_port }}
+              nrfUri: https://nrf-svc:{{ nrf_port }}
 
               # test data set from TS33501-f60 Annex C.4
               # udmProfileAHNPublicKey: 5a8d38864820197c3394b92613b20b91633cbd897119273bf8e4a6f4eec0a650
@@ -87,6 +87,8 @@
         metadata:
           name: udm
           namespace: "{{ openshift.namespace }}"
+          labels:
+            app: udm
           annotations:
             k8s.v1.cni.cncf.io/networks: "{{ add_network | to_json }}"
         spec:
@@ -120,7 +122,7 @@
         kind: Service
         apiVersion: v1
         metadata:
-          name: udm-service
+          name: udm-svc
           namespace: "{{ openshift.namespace }}"
         spec:
           selector:

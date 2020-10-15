@@ -40,12 +40,12 @@
               nssfName: NSSF
               sbi:
                 scheme: https
-                ipv4Addr: {{ nodes.nssf.ip }}
+                registerIPv4: nssf-svc
                 port: {{ nssf_port }}
               serviceNameList:
                 - nnssf-nsselection
                 - nnssf-nssaiavailability
-              nrfUri: https://{{ nodes.nrf.ip }}:{{ nrf_port }}
+              nrfUri: https://nrf-svc:{{ nrf_port }}
               supportedPlmnList:
                 - mcc: 208
                   mnc: 93
@@ -68,44 +68,44 @@
                 - snssai:
                     sst: 1
                   nsiInformationList:
-                    - nrfId: https://{{ nodes.nrf.ip }}:{{ nrf_port }}/nnrf-nfm/v1/nf-instances
+                    - nrfId: https://nrf-svc:{{ nrf_port }}/nnrf-nfm/v1/nf-instances
                       nsiId: 10
                 - snssai:
                     sst: 1
                     sd: 1
                   nsiInformationList:
-                    - nrfId: https://{{ nodes.nrf.ip }}:{{ nrf_port }}/nnrf-nfm/v1/nf-instances
+                    - nrfId: https://nrf-svc:{{ nrf_port }}/nnrf-nfm/v1/nf-instances
                       nsiId: 11
                 - snssai:
                     sst: 1
                     sd: 2
                   nsiInformationList:
-                    - nrfId: https://{{ nodes.nrf.ip }}:{{ nrf_port }}/nnrf-nfm/v1/nf-instances
+                    - nrfId: https://nrf-svc:{{ nrf_port }}/nnrf-nfm/v1/nf-instances
                       nsiId: 12
-                    - nrfId: https://{{ nodes.nrf.ip }}:{{ nrf_port }}/nnrf-nfm/v1/nf-instances
+                    - nrfId: https://nrf-svc:{{ nrf_port }}/nnrf-nfm/v1/nf-instances
                       nsiId: 12
                 - snssai:
                     sst: 1
                     sd: 3
                   nsiInformationList:
-                    - nrfId: https://{{ nodes.nrf.ip }}:{{ nrf_port }}/nnrf-nfm/v1/nf-instances
+                    - nrfId: https://nrf-svc:{{ nrf_port }}/nnrf-nfm/v1/nf-instances
                       nsiId: 13
                 - snssai:
                     sst: 2
                   nsiInformationList:
-                    - nrfId: https://{{ nodes.nrf.ip }}:{{ nrf_port }}/nnrf-nfm/v1/nf-instances
+                    - nrfId: https://nrf-svc:{{ nrf_port }}/nnrf-nfm/v1/nf-instances
                       nsiId: 20
                 - snssai:
                     sst: 2
                     sd: 1
                   nsiInformationList:
-                    - nrfId: https://{{ nodes.nrf.ip }}:{{ nrf_port }}/nnrf-nfm/v1/nf-instances
+                    - nrfId: https://nrf-svc:{{ nrf_port }}/nnrf-nfm/v1/nf-instances
                       nsiId: 21
                 - snssai:
                     sst: 1
                     sd: 010203
                   nsiInformationList:
-                    - nrfId: https://{{ nodes.nrf.ip }}:{{ nrf_port }}/nnrf-nfm/v1/nf-instances
+                    - nrfId: https://nrf-svc:{{ nrf_port }}/nnrf-nfm/v1/nf-instances
                       nsiId: 22
               amfSetList:
                 - amfSetId: 1
@@ -367,6 +367,8 @@
         metadata:
           name: nssf
           namespace: "{{ openshift.namespace }}"
+          labels:
+            app: nssf
           annotations:
             k8s.v1.cni.cncf.io/networks: "{{ add_network | to_json }}"
         spec:
@@ -388,3 +390,25 @@
                 items:
                 - key: nssfcfg.conf
                   path: nssfcfg.conf
+
+  - name: Create NSSF service
+    k8s:
+      state: present
+      apply: yes
+      host: "{{ openshift.api_url }}"
+      api_key: "{{ k8s_auth_result.k8s_auth.api_key }}"
+      validate_certs: no
+      definition:
+        kind: Service
+        apiVersion: v1
+        metadata:
+          name: nssf-svc
+          namespace: "{{ openshift.namespace }}"
+        spec:
+          selector:
+            app: nssf
+          ports:
+          - protocol: TCP
+            targetPort: "{{ nssf_port }}"
+            port: "{{ nssf_port }}"
+

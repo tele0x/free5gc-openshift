@@ -26,6 +26,8 @@
         metadata:
           name: mongodb
           namespace: "{{ openshift.namespace }}"
+          labels:
+            app: mongodb
           annotations:
             k8s.v1.cni.cncf.io/networks: "{{ add_network | to_json }}"
         spec:
@@ -52,10 +54,9 @@
         metadata:
           name: mongodb-svc
           namespace: "{{ openshift.namespace }}"
-        labels:
-          name: mongodb
         spec:
+          selector:
+            app: mongodb
           ports:
             - port: "{{ mongo_port }}"
               targetPort: "{{ mongo_port }}"
-          clusterIP: None 

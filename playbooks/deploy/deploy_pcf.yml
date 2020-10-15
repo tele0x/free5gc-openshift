@@ -40,7 +40,7 @@
               pcfName: PCF
               sbi:
                 scheme: https
-                ipv4Addr: {{ nodes.pcf.ip }}
+                registerIPv4: pcf-svc
                 port: {{ pcf_port }}
               timeFormat: 2020-01-01 10:10:10
               defaultBdtRefId: BdtPolicyId-
@@ -68,6 +68,8 @@
         metadata:
           name: pcf
           namespace: "{{ openshift.namespace }}"
+          labels:
+            app: pcf
           annotations:
             k8s.v1.cni.cncf.io/networks: "{{ add_network | to_json }}"
         spec:
@@ -101,7 +103,7 @@
         kind: Service
         apiVersion: v1
         metadata:
-          name: pcf-service
+          name: pcf-svc
           namespace: "{{ openshift.namespace }}"
         spec:
           selector:

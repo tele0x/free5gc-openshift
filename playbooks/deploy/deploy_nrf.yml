@@ -33,7 +33,7 @@
 
             configuration:
               MongoDBName: "free5gc"
-              MongoDBUrl: mongodb://{{ nodes.mongo.ip }}:{{ mongo_port }}
+              MongoDBUrl: mongodb://mongodb-svc:{{ mongo_port }}
               DefaultServiceIP: {{ nodes.nrf.ip }}
               sbi:
                 scheme: https
@@ -59,6 +59,8 @@
         metadata:
           name: nrf
           namespace: "{{ openshift.namespace }}"
+          labels:
+            app: nrf
           annotations:
             k8s.v1.cni.cncf.io/networks: "{{ add_network | to_json }}"
         spec:
