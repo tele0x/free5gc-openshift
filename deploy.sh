@@ -9,7 +9,8 @@ case "$1" in
 		;;		
 	"init")
 		echo -e "Initialize networking"
-		ansible-playbook -i localhost playbooks/initialize_cnv_network.yml
+		ansible-playbook -i localhost playbooks/init/00_create_namespace.yml
+		ansible-playbook -i localhost playbooks/init/01_initialize_cnv_network.yml
 		echo -e "Wait for NNCP configuration to be applied"
 		retry=0
 		until [ "$retry" -ge 5 ]; do
@@ -17,8 +18,8 @@ case "$1" in
 			retry=$((retry+1))
 			sleep 15
 		done
-		ansible-playbook -i localhost playbooks/initialize_network.yml
-		ansible-playbook -i localhost playbooks/initialize_sctp_proto.yml
+		ansible-playbook -i localhost playbooks/init/02_initialize_network.yml
+		ansible-playbook -i localhost playbooks/init/03_initialize_sctp_proto.yml
 		echo -e "SCTP module are being loaded on nodes, you can monitor the status with \"watch -n 3 'oc get nodes'\", wait until all nodes have been rebooted"
 		echo -e "You can run the following command to ensure the SCTP is loaded: \n"
 		echo -e "for n in \$(oc get nodes | awk '{print \$1}' | grep -v NAME) ; do echo -e \"Check SCTP on node \$n\" ; ssh core@\$n lsmod | grep sctp ; done\n"

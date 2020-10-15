@@ -4,7 +4,7 @@
 - hosts: localhost
   tasks:
   - name: Login
-    include_tasks: login.yml
+    include_tasks: ../login.yml
 
   - name: Enable SCTP protocol in master,worker nodes
     k8s:

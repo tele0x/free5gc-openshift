@@ -4,7 +4,7 @@
 - hosts: localhost
   tasks:
   - name: Login
-    include_tasks: login.yml
+    include_tasks: ../login.yml
 
   - name: Create NodeNetworkConfigurationPolicy, br1 on worker nodes
     k8s:
@@ -35,7 +35,7 @@
                     stp:
                       enabled: false
                   port:
-                    - name: ens3
+                    - name: "{{ openshift.host_ifname }}"
 
   - name: Create NetworkAttachmentDefinition bridge-net 
     k8s:
