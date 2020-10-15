@@ -75,17 +75,32 @@ You can test OCP cluster connection is working by running:
 $ ./deploy.sh test
 ```
 
-At this point we must initialize the networking on OpenShift
+Initialize networking deployment, this will configure networking in the cluster for the 5G Core.
 
 ```sh
 $ ./deploy.sh init
 ```
 
-Network initialization will execute the following:
+Network initialization workflow:
 
-  - Create *5gcore* namespace. 
-  - Add additional network called *5g-net* to the cluster.
-  - Create *MachineConfig* to load SCTP kernel module on worker nodes.
-  - Create *NodeNetworkConfigurationPolicy*
-     - Add a new bridge interface to the worker node, this is used by the VM to attach the secondary network.
-  - Create *NetworkAttachmentDefinition* used in VM manifest to attach the VM to secondary network.
+  - playbooks/init/00_create_namespace.yml 
+     - Create *5gcore* namespace. 
+  - playbooks/init/01_initialize_cnv_network.yml 
+     - Create *NodeNetworkConfigurationPolicy*.
+     - Add a new bridge interface to worker nodes.
+     - Create *NetworkAttachmentDefinition* used in VM manifest to attach the VM to the secondary network.
+  - playbooks/init/02_initialize_network.yml 
+     - Add additional macvlan network called *5g-net* to the cluster
+  - playbooks/init/03_initialize_sctp_proto.yml 
+      Create *MachineConfig* to load SCTP kernel module on worker nodes
+
+You can check resources are correctly created with
+You should see the bridge-br1 nncp *SuccessfullyConfigured*
+You should see under additionalNetworks the 5g-net network, and in the attachment *5g-net* and *bridge-net*
+
+
+```sh
+$ oc get nncp
+$ oc get networks.operator.openshift.io cluster -o yaml
+$ oc get network-attachment-definitions.k8s.cni.cncf.io -n 5gcore
+```
