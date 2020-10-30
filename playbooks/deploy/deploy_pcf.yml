@@ -44,7 +44,7 @@
                 port: {{ pcf_port }}
               timeFormat: 2020-01-01 10:10:10
               defaultBdtRefId: BdtPolicyId-
-              nrfUri: https://{{ nodes.nrf.ip }}:{{ nrf_port }}
+              nrfUri: https://nrf-svc:{{ nrf_port }}
               serviceList:
                 - serviceName: npcf-am-policy-control
                 - serviceName: npcf-smpolicycontrol

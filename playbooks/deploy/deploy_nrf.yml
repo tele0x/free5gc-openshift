@@ -37,7 +37,7 @@
               DefaultServiceIP: {{ nodes.nrf.ip }}
               sbi:
                 scheme: https
-                ipv4Addr: {{ nodes.nrf.ip }}
+                registerIPv4: pcf-svc 
                 port: {{ nrf_port }}
               DefaultPlmnId:
                 mcc: "208"

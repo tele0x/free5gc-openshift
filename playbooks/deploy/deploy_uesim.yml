@@ -28,7 +28,7 @@
         data:
           uesim.conf: |
             MongoDBName: "free5gc"
-            MongoDBUrl: "mongodb://{{ nodes.mongo.ip }}:{{ nodes.mongo.port }}"
+            MongoDBUrl: "mongodb://mongodb-svc:{{ nodes.mongo.port }}"
             RanIP: "{{ nodes.uesim.ip }}"
             AmfIP: "{{ nodes.amf.ip }}"
             UpfIP: "{{ nodes.upf.ip }}"
