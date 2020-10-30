@@ -36,6 +36,6 @@
       validate_certs: no
       api_version: v1
       kind: Service
-      name: nrf-service
+      name: nrf-svc
       namespace: "{{ openshift.namespace }}"
 
