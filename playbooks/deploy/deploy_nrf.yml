@@ -94,7 +94,7 @@
         kind: Service
         apiVersion: v1
         metadata:
-          name: nrf-service
+          name: nrf-svc
           namespace: "{{ openshift.namespace }}"
         spec:
           selector:
