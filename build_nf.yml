@@ -113,7 +113,7 @@
     args:
       chdir: /free5gc
     loop: "{{ nodes.keys() | list }}"
-    when: item != 'upf' and item != 'mongo' and cnf == 'all-in-one' and cnf != 'upf'
+    when: item != 'upf' and item != 'mongo' and cnf == 'all-in-one' and cnf != 'upf' and item != 'uesim'
   
   - name: Compile UPF
     shell: cmake .. && make

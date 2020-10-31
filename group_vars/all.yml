@@ -6,7 +6,7 @@ go:
 
 free5gc:
   repo: https://github.com/free5gc/free5gc.git
-  version: v3.0.3
+  version: v3.0.4
 
 # For this PoC will keep user and pwd in clear but you should use a vault for sensitive information
 openshift:
