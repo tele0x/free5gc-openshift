@@ -36,7 +36,6 @@ Optionally you can build and customize your own container images.
 
 ## Architecture
 
-Insert here the architecture diagram.
 ![OpenShift Free5GC Architecture](img/free5gc_openshift_architecture.png?raw=true "OpenShift Free5GC Architecture")
 
 Both core and RAN are deployed in the same cluster and namespace, using the ansible script is easy to deploy specific components on another cluster, for example to have a Core and Edge cluster. There is currently no segmentation between SMF <-> UPF N4 PFCP interface, for N1 N2 N3 the network is 192.168.5.0/24
