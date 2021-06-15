@@ -45,8 +45,8 @@ Both core and RAN are deployed in the same cluster and namespace, using the ansi
 
 Container images to run the 5G Core are already built and used in the playbooks:
 
-	| Name | Image | Description | Vewwwrsion |
-| ---- | ----- | ------- | ------- |
+| Name | Image | Description | Version |
+| ---- | ----- | ----------- | ------- |
 | free5gc-openshift | quay.io/ferossi/free5gc-openshift | All-in-one image with pre-compiled 5G Core NFs components | 0.1
 | free5gc-openshift-upf | quay.io/ferossi/free5gc-openshift-upf | UPF Containerized image for CNV | 0.1
 | ueransim | quay.io/ferossi/ueransim | UE RAN simulator image | 0.1
