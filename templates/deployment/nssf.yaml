@@ -1,0 +1,28 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: nssf
+  namespace: {{ openshift.namespace }}
+  labels:
+    app: nssf
+spec:
+  {{ nodes.nssf.custom }}
+  containers:
+  - name: nssf
+    image: {{ nodes.nssf.image }}
+    command:
+      - /free5gc/bin/./nssf
+    ports:
+      - containerPort: {{ nodes.nssf.port }}
+    volumeMounts:
+      - name: conf
+        mountPath: /free5gc/config/nssfcfg.yaml
+        subPath: nssfcfg.yaml
+  volumes:
+    - name: conf
+      configMap:
+        name: nssf-config
+        items:
+        - key: nssfcfg.yaml
+          path: nssfcfg.yaml
+

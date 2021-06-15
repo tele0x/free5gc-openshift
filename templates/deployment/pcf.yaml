@@ -1,0 +1,28 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: pcf
+  namespace: {{ openshift.namespace }}
+  labels:
+    app: pcf
+spec:
+  {{ nodes.pcf.custom }}
+  containers:
+  - name: pcf
+    image: {{ nodes.pcf.image }}
+    command:
+      - /free5gc/bin/./pcf
+    ports:
+      - containerPort: {{ nodes.pcf.port }}
+    volumeMounts:
+      - name: conf
+        mountPath: /free5gc/config/pcfcfg.yaml
+        subPath: pcfcfg.yaml
+  volumes:
+    - name: conf
+      configMap:
+        name: pcf-config
+        items:
+        - key: pcfcfg.yaml
+          path: pcfcfg.yaml
+

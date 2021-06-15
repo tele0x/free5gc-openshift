@@ -1,0 +1,12 @@
+apiVersion: route.openshift.io/v1
+kind: Route
+metadata:
+  name: webui-svc
+  namespace: {{ openshift.namespace }}
+spec:
+  port:
+    targetPort: 5000
+  to:
+    kind: Service
+    name: webui-svc
+

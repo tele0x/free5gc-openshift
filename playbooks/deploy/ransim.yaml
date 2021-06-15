@@ -1,0 +1,27 @@
+# 
+# Deploy RAN Simulator
+---
+- hosts: localhost
+  vars:
+    add_network: 
+          '[{ "name": "5g-net", 
+          "ips": [ "{{ nodes.ransim.ip }}/24" ],
+          "mac": "{{ nodes.ransim.mac }}"
+          }]'
+  tasks:
+  - name: Login
+    include_tasks: ../login.yml
+
+  - name: Deploy RAN Simulator config
+    kubernetes.core.k8s:
+        api_key: "{{ k8s_auth_result.k8s_auth.api_key }}"
+        state: present
+        definition: "{{ lookup('template', '../../templates/config/ransim.yaml') | from_yaml }}"
+
+  - name: Deploy RAN Simulator
+    kubernetes.core.k8s:
+        api_key: "{{ k8s_auth_result.k8s_auth.api_key }}"
+        state: present
+        definition: "{{ lookup('template', '../../templates/deployment/ransim.yaml') | from_yaml }}"
+
+

@@ -1,0 +1,27 @@
+# 
+# Deploy UE Simulator
+---
+- hosts: localhost
+  vars:
+    add_network: 
+          '[{ "name": "5g-net", 
+          "ips": [ "{{ nodes.uesim.ip }}/24" ],
+          "mac": "{{ nodes.uesim.mac }}"
+          }]'
+  tasks:
+  - name: Login
+    include_tasks: ../login.yml
+
+  - name: Deploy UE Simulator config
+    kubernetes.core.k8s:
+        api_key: "{{ k8s_auth_result.k8s_auth.api_key }}"
+        state: present
+        definition: "{{ lookup('template', '../../templates/config/uesim.yaml') | from_yaml }}"
+
+  - name: Deploy UE Simulator
+    kubernetes.core.k8s:
+        api_key: "{{ k8s_auth_result.k8s_auth.api_key }}"
+        state: present
+        definition: "{{ lookup('template', '../../templates/deployment/uesim.yaml') | from_yaml }}"
+
+

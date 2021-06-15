@@ -1,0 +1,13 @@
+kind: Service
+apiVersion: v1
+metadata:
+  name: nrf-svc
+  namespace: {{ openshift.namespace }}
+spec:
+  selector:
+    app: nrf
+  ports:
+  - protocol: TCP
+    targetPort: {{ nodes.nrf.port }}
+    port: {{ nodes.nrf.port }}
+

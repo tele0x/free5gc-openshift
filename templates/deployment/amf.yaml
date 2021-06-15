@@ -1,0 +1,29 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: amf
+  namespace: {{ openshift.namespace }}
+  annotations:
+    k8s.v1.cni.cncf.io/networks: '{{ add_network | to_json }}'
+  labels:
+    app: amf
+spec:
+  {{ nodes.amf.custom }}
+  containers:
+  - name: amf
+    image: {{ nodes.amf.image }}
+    command:
+      - /free5gc/bin/./amf
+    ports:
+      - containerPort: {{ nodes.amf.port }}
+    volumeMounts:
+      - name: conf
+        mountPath: /free5gc/config/amfcfg.yaml
+        subPath: amfcfg.yaml
+  volumes:
+    - name: conf
+      configMap:
+        name: amf-config
+        items:
+        - key: amfcfg.yaml
+          path: amfcfg.yaml

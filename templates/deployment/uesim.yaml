@@ -1,0 +1,36 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: uesim
+  namespace: {{ openshift.namespace }}
+  annotations:
+    k8s.v1.cni.cncf.io/networks: '{{ add_network | to_json }}'
+spec:
+  {{ nodes.uesim.custom }}
+  containers:
+  - name: uesim
+    image: {{ nodes.uesim.image }}
+    workingDir: /UERANSIM
+    command: [ "build/./nr-ue", "-c" , "config/free5gc-ue.yaml" ]
+    securityContext:
+      privileged: true
+      capabilities:
+        add:
+        - NET_ADMIN
+    volumeMounts:
+      - name: conf
+        mountPath: /UERANSIM/config/free5gc-ue.yaml
+        subPath: free5gc-ue.yaml
+      - name: net
+        mountPath: /dev/net
+  volumes:
+    - name: conf
+      configMap:
+        name: uesim-config
+        items:
+        - key: free5gc-ue.yaml
+          path: free5gc-ue.yaml
+    - hostPath:
+        path: /dev/net
+        type: ""
+      name: net

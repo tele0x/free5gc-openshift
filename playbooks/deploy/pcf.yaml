@@ -1,0 +1,25 @@
+# 
+# Deploy PCF
+---
+- hosts: localhost
+  tasks:
+  - name: Login
+    include_tasks: ../login.yml
+
+  - name: Create PCF config map
+    kubernetes.core.k8s:
+        api_key: "{{ k8s_auth_result.k8s_auth.api_key }}"
+        state: present
+        definition: "{{ lookup('template', '../../templates/config/pcf.yaml') | from_yaml }}"
+
+  - name: Deploy PCF
+    kubernetes.core.k8s:
+        api_key: "{{ k8s_auth_result.k8s_auth.api_key }}"
+        state: present
+        definition: "{{ lookup('template', '../../templates/deployment/pcf.yaml') | from_yaml }}"
+
+  - name: Create PCF service
+    kubernetes.core.k8s:
+        api_key: "{{ k8s_auth_result.k8s_auth.api_key }}"
+        state: present
+        definition: "{{ lookup('template', '../../templates/service/pcf.yaml') | from_yaml }}"

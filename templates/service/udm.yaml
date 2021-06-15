@@ -1,0 +1,13 @@
+kind: Service
+apiVersion: v1
+metadata:
+  name: udm-svc
+  namespace: {{ openshift.namespace }}
+spec:
+  selector:
+    app: udm
+  ports:
+  - protocol: TCP
+    targetPort: {{ nodes.udm.port }}
+    port: {{ nodes.udm.port }}
+

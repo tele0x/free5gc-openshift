@@ -1,0 +1,25 @@
+# 
+# Undeploy RAN simulator
+---
+- hosts: localhost
+  tasks:
+  - name: Login
+    include_tasks: ../login.yml
+
+  - name: Remove RAN Simulator config map
+    kubernetes.core.k8s:
+      state: absent
+      api_key: "{{ k8s_auth_result.k8s_auth.api_key }}"
+      api_version: v1
+      kind: ConfigMap
+      name: ransim-config
+      namespace: "{{ openshift.namespace }}"
+      
+  - name: Remove RAN simulator
+    kubernetes.core.k8s:
+      state: absent
+      api_key: "{{ k8s_auth_result.k8s_auth.api_key }}"
+      api_version: v1
+      kind: Pod
+      name: ransim
+      namespace: "{{ openshift.namespace }}"

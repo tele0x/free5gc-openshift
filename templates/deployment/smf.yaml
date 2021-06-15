@@ -1,0 +1,29 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: smf
+  namespace: {{ openshift.namespace }}
+  annotations:
+    k8s.v1.cni.cncf.io/networks: '{{ add_network | to_json }}'
+  labels:
+    app: smf
+spec:
+  {{ nodes.smf.custom }}
+  containers:
+  - name: smf
+    image: {{ nodes.smf.image }}
+    command:
+      - /free5gc/bin/./smf
+    ports:
+      - containerPort: {{ nodes.smf.port }}
+    volumeMounts:
+      - name: conf
+        mountPath: /free5gc/config/smfcfg.yaml
+        subPath: smfcfg.yaml
+  volumes:
+    - name: conf
+      configMap:
+        name: smf-config
+        items:
+        - key: smfcfg.yaml
+          path: smfcfg.yaml

@@ -1,0 +1,28 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: udm
+  namespace: {{ openshift.namespace }}
+  labels:
+    app: udm
+spec:
+  {{ nodes.udm.custom }}
+  containers:
+  - name: udm
+    image: {{ nodes.udm.image }}
+    command:
+      - /free5gc/bin/./udm
+    ports:
+      - containerPort: {{ nodes.udm.port }}
+    volumeMounts:
+      - name: conf
+        mountPath: /free5gc/config/udmcfg.yaml
+        subPath: udmcfg.yaml
+  volumes:
+    - name: conf
+      configMap:
+        name: udm-config
+        items:
+        - key: udmcfg.yaml
+          path: udmcfg.yaml
+

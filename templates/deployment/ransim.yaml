@@ -1,0 +1,26 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: ransim
+  namespace: {{ openshift.namespace }}
+  annotations:
+    k8s.v1.cni.cncf.io/networks: '{{ add_network | to_json }}'
+spec:
+  {{ nodes.ransim.custom }}
+  containers:
+  - name: ransim
+    image: {{ nodes.ransim.image }}
+    workingDir: /UERANSIM
+    command: [ "build/./nr-gnb", "-c", "config/free5gc-gnb.yaml" ]
+    volumeMounts:
+      - name: conf
+        mountPath: /UERANSIM/config/free5gc-gnb.yaml
+        subPath: free5gc-gnb.yaml
+  volumes:
+    - name: conf
+      configMap:
+        name: ransim-config
+        items:
+        - key: free5gc-gnb.yaml
+          path: free5gc-gnb.yaml
+

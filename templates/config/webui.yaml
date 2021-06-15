@@ -1,0 +1,15 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: webui-config
+  namespace: {{ openshift.namespace }}
+data:
+  webuicfg.yaml: |
+    info:
+      version: 1.0.0
+      description: WebUI initial local configuration
+
+    configuration:
+      mongodb: # the mongodb connected by this webui
+        name: free5gc # name of the mongodb
+        url: mongodb://mongo-svc:{{ nodes.mongo.port }} # a valid URL of the mongodb

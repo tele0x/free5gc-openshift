@@ -1,0 +1,112 @@
+# =======================================================
+# Image build configuration
+# =======================================================
+# Packages required for building NFs and UERANSIM
+# It's recommended to use go 1.14.4 to compile Free5GC
+go:
+  package: go1.14.4.linux-amd64.tar.gz
+  url: https://dl.google.com/go/go1.14.4.linux-amd64.tar.gz
+
+free5gc:
+  repo: https://github.com/free5gc/free5gc.git
+  version: v3.0.5
+
+ueransim:
+  repo: https://github.com/aligungr/UERANSIM.git
+  cmake_url: https://github.com/Kitware/CMake/releases/download/v3.20.0/cmake-3.20.0-linux-x86_64.tar.gz
+  cmake_pkg: cmake-3.20.0-linux-x86_64.tar.gz
+
+# ======================================================
+# 5G Core Environment Configuration
+# For this PoC will keep user and pwd in clear but you should use a vault for sensitive information
+# ======================================================
+openshift:
+  api_url: https://api.ocpt.telco5glab.us:6443
+  username: tele
+  password: tele
+  namespace: 5gcore
+  
+  # This is the host interface on the worker node where we bridge our additional network used by the UPF CNV (Container Native Virtualization)
+  # This variable is used in the script playbooks/init/01_initialize_cnv_network.yaml
+  host_ifname: ens3
+
+default_image: quay.io/ferossi/free5gc-aio:0.1
+
+# Custom spec to add to pod manifest
+# In this case is used to schedule all the pods on a specific node
+default_custom_spec: ""
+# example with nodeSelector to deploy on specific nodes
+#default_custom_spec: "nodeSelector:\n    kubernetes.io/hostname: ocp-worker-2"
+
+nodes:
+  webui:
+    port: 5000
+    image: "{{ default_image }}"
+    custom: "{{ default_custom_spec }}"
+
+  ausf:
+    port: 29509
+    image: "{{ default_image }}"
+    custom: "{{ default_custom_spec }}"
+
+  nrf:
+    port: 29510
+    image: "{{ default_image }}"
+    custom: "{{ default_custom_spec }}"
+
+  nssf:
+    port: 29531
+    image: "{{ default_image }}"
+    custom: "{{ default_custom_spec }}"
+
+  pcf:
+    port: 29507
+    image: "{{ default_image }}"
+    custom: "{{ default_custom_spec }}"
+
+  udm:
+    port: 29503
+    image: "{{ default_image }}"
+    custom: "{{ default_custom_spec }}"
+
+  udr:
+    port: 29504
+    image: "{{ default_image }}"
+    custom: "{{ default_custom_spec }}"
+
+  mongo:
+    port: 27017
+    image: "{{ default_image }}"
+    custom: "{{ default_custom_spec }}"
+  
+  amf:
+    ip: "192.168.5.10"
+    mac: "CA:FE:C0:FF:EE:10"
+    port: 29518
+    image: "{{ default_image }}"
+    custom: "{{ default_custom_spec }}"
+  
+  smf:
+    ip: "192.168.5.15"
+    mac: "CA:FE:C0:FF:EE:15"
+    port: 29502
+    image: "{{ default_image }}"
+    custom: "{{ default_custom_spec }}"
+
+  upf:
+    ip: "192.168.5.18"
+    mac: "CA:FE:C0:FF:EE:18"
+    image: quay.io/ferossi/free5gc-upf:0.1
+    custom: "{{ default_custom_spec }}"
+
+  ransim:
+    ip: "192.168.5.20"
+    mac: "CA:FE:C0:FF:EE:20"
+    image: quay.io/ferossi/ueransim:0.1
+    custom: "{{ default_custom_spec }}"
+
+  uesim:
+    ip: "192.168.5.21"
+    mac: "CA:FE:C0:FF:EE:21"
+    image: quay.io/ferossi/ueransim:0.1
+    custom: "{{ default_custom_spec }}"

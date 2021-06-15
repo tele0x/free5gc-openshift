@@ -1,0 +1,31 @@
+# 
+# Deploy NSSF
+---
+- hosts: localhost
+  vars:
+    add_network: 
+          '[{ "name": "5g-net", 
+          "ips": [ "{{ nodes.nssf.ip }}/24" ],
+          "mac": "{{ nodes.nssf.mac }}"
+          }]'
+  tasks:
+  - name: Login
+    include_tasks: ../login.yml
+
+  - name: Create NSSF config map
+    kubernetes.core.k8s:
+        api_key: "{{ k8s_auth_result.k8s_auth.api_key }}"
+        state: present
+        definition: "{{ lookup('template', '../../templates/config/nssf.yaml') | from_yaml }}"
+
+  - name: Deploy NSSF
+    kubernetes.core.k8s:
+        api_key: "{{ k8s_auth_result.k8s_auth.api_key }}"
+        state: present
+        definition: "{{ lookup('template', '../../templates/deployment/nssf.yaml') | from_yaml }}"
+
+  - name: Create NSSF service
+    kubernetes.core.k8s:
+        api_key: "{{ k8s_auth_result.k8s_auth.api_key }}"
+        state: present
+        definition: "{{ lookup('template', '../../templates/service/nssf.yaml') | from_yaml }}"

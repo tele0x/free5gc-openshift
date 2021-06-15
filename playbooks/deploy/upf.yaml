@@ -1,0 +1,21 @@
+# 
+# Deploy UPF
+---
+- hosts: localhost
+  vars:
+    add_network: 
+          '[{ "name": "5g-net", 
+          "ips": [ "{{ nodes.upf.ip }}/24" ],
+          "mac": "{{ nodes.upf.mac }}"
+          }]'
+  tasks:
+  - name: Login
+    include_tasks: ../login.yml
+
+  - name: Deploy UPF
+    kubernetes.core.k8s:
+        api_key: "{{ k8s_auth_result.k8s_auth.api_key }}"
+        state: present
+        definition: "{{ lookup('template', '../../templates/deployment/upf.yaml') | from_yaml }}"
+
+

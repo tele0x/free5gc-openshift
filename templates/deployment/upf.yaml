@@ -1,0 +1,75 @@
+apiVersion: kubevirt.io/v1alpha3
+kind: VirtualMachine
+metadata:
+ name: upf-vm
+ namespace: {{ openshift.namespace }}
+ labels:
+   app: upf-vm
+spec:
+ {{ nodes.upf.custom }}
+ running: true
+ template:
+   metadata:
+     labels:
+       kubevirt.io/domain: upf-vm
+       vm.kubevirt.io/name: upf-vm
+       debugLogs: "true"
+   spec:
+     domain:
+       cpu:
+         cores: 1
+         sockets: 1
+         threads: 1
+       devices:
+         disks:
+           - name: containerdisk
+             disk:
+               bus: virtio
+           - name: cloudinitdisk
+             disk:
+               bus: virtio
+         interfaces:
+           - masquerade: {}
+             model: virtio
+             name: nic-0
+           - bridge: {}
+             model: virtio
+             name: bridge-net1
+         networkInterfaceMultiqueue: true
+         rng: {}
+       resources:
+         requests:
+           memory: 1Gi
+     evictionStrategy: LiveMigrate
+     hostname: upf-vm
+     networks:
+       - name: nic-0
+         pod: {}
+       - name: bridge-net1
+         multus:
+           networkName: bridge-net
+     terminationGracePeriodSeconds: 180
+     volumes:
+       - name: containerdisk
+         containerDisk:
+               image: {{ nodes.upf.image }}
+       - name: cloudinitdisk
+         cloudInitNoCloud:
+           userData: |-
+             #!/bin/bash
+             nmcli con add con-name eth1 ifname eth1 type ethernet ip4 {{ nodes.upf.ip }}/24
+             nmcli con up eth1
+             ip route add 192.168.5.0/24 dev eth1
+             echo 1 > /proc/sys/net/ipv4/ip_forward
+             # Allow password based ssh
+             sed -e 's/PasswordAuthentication no/PasswordAuthentication yes/g' -i /etc/ssh/sshd_config
+             systemctl restart sshd
+             # Configure UPF
+             sed -e 's/127.0.0.8/{{ nodes.upf.ip }}/g' -i /free5gc/NFs/upf/build/config/upfcfg.yaml
+             sed -e '/.*cidr.*/a \     \ natifname: eth0' -i /free5gc/NFs/upf/build/config/upfcfg.yaml
+             screen -d -m /free5gc/NFs/upf/build/bin/free5gc-upfd -f /free5gc/NFs/upf/build/config/upfcfg.yaml
+             # Add NAT and packet forwarding between GTP tunnel and internet interface
+             iptables -A FORWARD -i eth0 -j ACCEPT
+             iptables -A FORWARD -i upfgtp -j ACCEPT
+             iptables -t nat -A POSTROUTING -o eth0 -j MASQUERADE
+             iptables -t nat -A POSTROUTING -o upfgtp -j MASQUERADE

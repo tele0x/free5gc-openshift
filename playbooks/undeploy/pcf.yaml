@@ -1,0 +1,35 @@
+# 
+# Undeploy PCF
+---
+- hosts: localhost
+  tasks:
+  - name: Login
+    include_tasks: ../login.yml
+
+  - name: Remove PCF config map
+    kubernetes.core.k8s:
+      state: absent
+      api_key: "{{ k8s_auth_result.k8s_auth.api_key }}"
+      api_version: v1
+      kind: ConfigMap
+      name: pcf-config
+      namespace: "{{ openshift.namespace }}"
+      
+  - name: Remove PCF NF
+    kubernetes.core.k8s:
+      state: absent
+      api_key: "{{ k8s_auth_result.k8s_auth.api_key }}"
+      api_version: v1
+      kind: Pod
+      name: pcf
+      namespace: "{{ openshift.namespace }}"
+
+  - name: Remove PCF service
+    kubernetes.core.k8s:
+      state: absent
+      api_key: "{{ k8s_auth_result.k8s_auth.api_key }}"
+      api_version: v1
+      kind: Service
+      name: pcf-svc
+      namespace: "{{ openshift.namespace }}"
+

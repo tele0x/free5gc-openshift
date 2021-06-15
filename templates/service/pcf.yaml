@@ -1,0 +1,13 @@
+kind: Service
+apiVersion: v1
+metadata:
+  name: pcf-svc
+  namespace: {{ openshift.namespace }}
+spec:
+  selector:
+    app: pcf
+  ports:
+  - protocol: TCP
+    targetPort: {{ nodes.pcf.port }}
+    port: {{ nodes.pcf.port }}
+

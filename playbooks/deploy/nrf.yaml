@@ -1,0 +1,26 @@
+# 
+# Deploy NRF
+---
+- hosts: localhost
+  tasks:
+  - name: Login
+    include_tasks: ../login.yml
+
+  - name: Create NRF config map
+    kubernetes.core.k8s:
+        api_key: "{{ k8s_auth_result.k8s_auth.api_key }}"
+        state: present
+        definition: "{{ lookup('template', '../../templates/config/nrf.yaml') | from_yaml }}"
+
+  - name: Deploy NRF
+    kubernetes.core.k8s:
+        api_key: "{{ k8s_auth_result.k8s_auth.api_key }}"
+        state: present
+        definition: "{{ lookup('template', '../../templates/deployment/nrf.yaml') | from_yaml }}"
+
+  - name: Create NRF Service
+    kubernetes.core.k8s:
+        api_key: "{{ k8s_auth_result.k8s_auth.api_key }}"
+        state: present
+        definition: "{{ lookup('template', '../../templates/service/nrf.yaml') | from_yaml }}"
+

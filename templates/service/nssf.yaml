@@ -1,0 +1,13 @@
+kind: Service
+apiVersion: v1
+metadata:
+  name: nssf-svc
+  namespace: {{ openshift.namespace }}
+spec:
+  selector:
+    app: nssf
+  ports:
+  - protocol: TCP
+    targetPort: {{ nodes.nssf.port }}
+    port: {{ nodes.nssf.port }}
+

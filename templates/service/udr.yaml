@@ -1,0 +1,13 @@
+kind: Service
+apiVersion: v1
+metadata:
+  name: udr-svc
+  namespace: {{ openshift.namespace }}
+spec:
+  selector:
+    app: udr
+  ports:
+  - protocol: TCP
+    targetPort: {{ nodes.udr.port }}
+    port: {{ nodes.udr.port }}
+

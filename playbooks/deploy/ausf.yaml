@@ -1,0 +1,26 @@
+# 
+# Deploy AUSF
+---
+- hosts: localhost
+  tasks:
+  - name: Login
+    include_tasks: ../login.yml
+
+  - name: Create AUSF config map
+    kubernetes.core.k8s:
+        api_key: "{{ k8s_auth_result.k8s_auth.api_key }}"
+        state: present
+        definition: "{{ lookup('template', '../../templates/config/ausf.yaml') | from_yaml }}"
+
+  - name: Deploy AUSF
+    kubernetes.core.k8s:
+        api_key: "{{ k8s_auth_result.k8s_auth.api_key }}"
+        state: present
+        definition: "{{ lookup('template', '../../templates/deployment/ausf.yaml') | from_yaml }}"
+
+  - name: Create AUSF service
+    kubernetes.core.k8s:
+        api_key: "{{ k8s_auth_result.k8s_auth.api_key }}"
+        state: present
+        definition: "{{ lookup('template', '../../templates/service/ausf.yaml') | from_yaml }}"
+

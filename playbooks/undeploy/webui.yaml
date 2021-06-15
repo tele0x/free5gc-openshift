@@ -1,0 +1,43 @@
+# 
+# Undeploy WebUI
+---
+- hosts: localhost
+  tasks:
+  - name: Login
+    include_tasks: ../login.yml
+
+  - name: Remove WebUI config map
+    kubernetes.core.k8s:
+      state: absent
+      api_key: "{{ k8s_auth_result.k8s_auth.api_key }}"
+      api_version: v1
+      kind: ConfigMap
+      name: webui-config
+      namespace: "{{ openshift.namespace }}"
+      
+  - name: Remove WebUI
+    kubernetes.core.k8s:
+      state: absent
+      api_key: "{{ k8s_auth_result.k8s_auth.api_key }}"
+      api_version: v1
+      kind: Pod
+      name: webui
+      namespace: "{{ openshift.namespace }}"
+
+  - name: Remove WebUI service
+    kubernetes.core.k8s:
+      state: absent
+      api_key: "{{ k8s_auth_result.k8s_auth.api_key }}"
+      api_version: v1
+      kind: Service
+      name: webui-svc
+      namespace: "{{ openshift.namespace }}"
+
+  - name: Remove WebUI route
+    kubernetes.core.k8s:
+      state: absent
+      api_key: "{{ k8s_auth_result.k8s_auth.api_key }}"
+      api_version: v1
+      kind: Route
+      name: webui-svc
+      namespace: "{{ openshift.namespace }}"

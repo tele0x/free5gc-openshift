@@ -1,0 +1,33 @@
+# 
+# Deploy WebUI
+---
+- hosts: localhost
+  tasks:
+  - name: Login
+    include_tasks: ../login.yml
+
+  - name: Create Web UI config map
+    kubernetes.core.k8s:
+        api_key: "{{ k8s_auth_result.k8s_auth.api_key }}"
+        state: present
+        definition: "{{ lookup('template', '../../templates/config/webui.yaml') | from_yaml }}"
+
+  - name: Deploy Web UI
+    kubernetes.core.k8s:
+        api_key: "{{ k8s_auth_result.k8s_auth.api_key }}"
+        state: present
+        definition: "{{ lookup('template', '../../templates/deployment/webui.yaml') | from_yaml }}"
+
+  - name: Create Web UI service
+    kubernetes.core.k8s:
+        api_key: "{{ k8s_auth_result.k8s_auth.api_key }}"
+        state: present
+        definition: "{{ lookup('template', '../../templates/service/webui.yaml') | from_yaml }}"
+
+  - name: Provision test UE
+    kubernetes.core.k8s_exec:
+      api_key: "{{ k8s_auth_result.k8s_auth.api_key }}"
+      namespace: "{{ openshift.namespace }}"
+      pod: mongodb
+      command: "mongo free5gc --quiet --eval 'db.subscriptionData.authenticationData.authenticationSubscription.insert({\"ueId\":\"imsi-208930000000003\",\"authenticationMethod\":\"5G_AKA\",\"permanentKey\":{\"permanentKeyValue\":\"8baf473f2f8fd09487cccbd7097c6862\",\"encryptionKey\":0.0,\"encryptionAlgorithm\":0.0},\"sequenceNumber\":\"16f3b3f70fc2\",\"authenticationManagementField\":\"8000\",\"milenage\":{\"op\":{\"encryptionKey\":0.0,\"encryptionAlgorithm\":0.0,\"opValue\":\"\"}},\"opc\":{\"opcValue\":\"8e27b6af0e692e750f32667a3b14605d\",\"encryptionKey\":0.0,\"encryptionAlgorithm\":0.0}}); db.subscriptionData.provisionedData.amData.insert({\"gpsis\":[\"msisdn-0900000000\"],\"subscribedUeAmbr\":{\"uplink\":\"1 Gbps\",\"downlink\":\"2 Gbps\"},\"nssai\":{\"defaultSingleNssais\":[{\"sd\":\"010203\",\"sst\":1.0},{\"sst\":1.0,\"sd\":\"112233\"}]},\"ueId\":\"imsi-208930000000003\",\"servingPlmnId\":\"20893\"}); db.subscriptionData.provisionedData.smData.insert({\"singleNssai\":{\"sst\":1.0,\"sd\":\"010203\"},\"dnnConfigurations\":{\"internet\":{\"pduSessionTypes\":{\"defaultSessionType\":\"IPV4\",\"allowedSessionTypes\":[\"IPV4\"]},\"sscModes\":{\"defaultSscMode\":\"SSC_MODE_1\",\"allowedSscModes\":[\"SSC_MODE_2\",\"SSC_MODE_3\"]},\"5gQosProfile\":{\"5qi\":9.0,\"arp\":{\"preemptVuln\":\"\",\"priorityLevel\":8.0,\"preemptCap\":\"\"},\"priorityLevel\":8.0},\"sessionAmbr\":{\"uplink\":\"200 Mbps\",\"downlink\":\"100 Mbps\"}},\"internet2\":{\"pduSessionTypes\":{\"allowedSessionTypes\":[\"IPV4\"],\"defaultSessionType\":\"IPV4\"},\"sscModes\":{\"allowedSscModes\":[\"SSC_MODE_2\",\"SSC_MODE_3\"],\"defaultSscMode\":\"SSC_MODE_1\"},\"5gQosProfile\":{\"5qi\":9.0,\"arp\":{\"priorityLevel\":8.0,\"preemptCap\":\"\",\"preemptVuln\":\"\"},\"priorityLevel\":8.0},\"sessionAmbr\":{\"uplink\":\"200 Mbps\",\"downlink\":\"100 Mbps\"}}},\"ueId\":\"imsi-208930000000003\",\"servingPlmnId\":\"20893\"}); db.subscriptionData.provisionedData.smData.insert({\"singleNssai\":{\"sd\":\"112233\",\"sst\":1.0},\"dnnConfigurations\":{\"internet\":{\"pduSessionTypes\":{\"defaultSessionType\":\"IPV4\",\"allowedSessionTypes\":[\"IPV4\"]},\"sscModes\":{\"defaultSscMode\":\"SSC_MODE_1\",\"allowedSscModes\":[\"SSC_MODE_2\",\"SSC_MODE_3\"]},\"5gQosProfile\":{\"5qi\":9.0,\"arp\":{\"priorityLevel\":8.0,\"preemptCap\":\"\",\"preemptVuln\":\"\"},\"priorityLevel\":8.0},\"sessionAmbr\":{\"uplink\":\"200 Mbps\",\"downlink\":\"100 Mbps\"}},\"internet2\":{\"pduSessionTypes\":{\"defaultSessionType\":\"IPV4\",\"allowedSessionTypes\":[\"IPV4\"]},\"sscModes\":{\"defaultSscMode\":\"SSC_MODE_1\",\"allowedSscModes\":[\"SSC_MODE_2\",\"SSC_MODE_3\"]},\"5gQosProfile\":{\"5qi\":9.0,\"arp\":{\"priorityLevel\":8.0,\"preemptCap\":\"\",\"preemptVuln\":\"\"},\"priorityLevel\":8.0},\"sessionAmbr\":{\"uplink\":\"200 Mbps\",\"downlink\":\"100 Mbps\"}}},\"ueId\":\"imsi-208930000000003\",\"servingPlmnId\":\"20893\"}); db.subscriptionData.provisionedData.smfSelectionSubscriptionData.insert({\"subscribedSnssaiInfos\":{\"01010203\":{\"dnnInfos\":[{\"dnn\":\"internet\"},{\"dnn\":\"internet2\"}]},\"01112233\":{\"dnnInfos\":[{\"dnn\":\"internet\"},{\"dnn\":\"internet2\"}]}},\"ueId\":\"imsi-208930000000003\",\"servingPlmnId\":\"20893\"}); db.policyData.ues.amData.insert({\"ueId\":\"imsi-208930000000003\",\"subscCats\":[\"free5gc\"] }); db.policyData.ues.smData.insert({\"smPolicySnssaiData\":{\"01010203\":{\"smPolicyDnnData\":{\"internet2\":{\"dnn\":\"internet2\"},\"internet\":{\"dnn\":\"internet\"}},\"snssai\":{\"sst\":1.0,\"sd\":\"010203\"}},\"01112233\":{\"smPolicyDnnData\":{\"internet\":{\"dnn\":\"internet\"},\"internet2\":{\"dnn\":\"internet2\"}},\"snssai\":{\"sst\":1.0,\"sd\":\"112233\"}}},\"ueId\":\"imsi-208930000000003\"});'"    
+    register: result

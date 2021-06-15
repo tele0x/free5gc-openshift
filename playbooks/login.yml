@@ -1,0 +1,11 @@
+# 
+# Login to OCP cluster and register token
+---
+- name: Login to OCP cluster
+  kubernetes.core.k8s_auth:
+    host: "{{ openshift.api_url }}"
+    username: "{{ openshift.username }}"
+    password: "{{ openshift.password }}"
+    validate_certs: no
+  register: k8s_auth_result
+

@@ -1,0 +1,31 @@
+# 
+# Deploy SMF
+---
+- hosts: localhost
+  vars:
+    add_network: 
+          '[{ "name": "5g-net", 
+          "ips": [ "{{ nodes.smf.ip }}/24" ],
+          "mac": "{{ nodes.smf.mac }}"
+          }]'
+  tasks:
+  - name: Login
+    include_tasks: ../login.yml
+
+  - name: Create SMF config map
+    kubernetes.core.k8s:
+        api_key: "{{ k8s_auth_result.k8s_auth.api_key }}"
+        state: present
+        definition: "{{ lookup('template', '../../templates/config/smf.yaml') | from_yaml }}"
+
+  - name: Deploy SMF
+    kubernetes.core.k8s:
+        api_key: "{{ k8s_auth_result.k8s_auth.api_key }}"
+        state: present
+        definition: "{{ lookup('template', '../../templates/deployment/smf.yaml') | from_yaml }}"
+
+  - name: Create SMF service
+    kubernetes.core.k8s:
+        api_key: "{{ k8s_auth_result.k8s_auth.api_key }}"
+        state: present
+        definition: "{{ lookup('template', '../../templates/service/smf.yaml') | from_yaml }}"

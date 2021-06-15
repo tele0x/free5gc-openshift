@@ -1,0 +1,8 @@
+# 
+# Check login to OCP cluster
+---
+- hosts: localhost
+
+  tasks:
+  - name: Login
+    include_tasks: login.yml

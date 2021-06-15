@@ -1,0 +1,32 @@
+# 
+# Deploy AMF
+---
+- hosts: localhost
+  vars:
+    add_network: 
+          '[{ "name": "5g-net", 
+          "ips": [ "{{ nodes.amf.ip }}/24" ],
+          "mac": "{{ nodes.amf.mac }}"
+          }]'
+  tasks:
+  - name: Login
+    include_tasks: ../login.yml
+
+  - name: Create AMF config map
+    kubernetes.core.k8s:
+        api_key: "{{ k8s_auth_result.k8s_auth.api_key }}"
+        state: present
+        definition: "{{ lookup('template', '../..//templates/config/amf.yaml') | from_yaml }}"
+  
+  - name: Deploy AMF
+    kubernetes.core.k8s:
+        api_key: "{{ k8s_auth_result.k8s_auth.api_key }}"
+        state: present
+        definition: "{{ lookup('template', '../..//templates/deployment/amf.yaml') | from_yaml }}"
+
+  - name: Create AMF service
+    kubernetes.core.k8s:
+        api_key: "{{ k8s_auth_result.k8s_auth.api_key }}"
+        state: present
+        definition: "{{ lookup('template', '../../templates/service/amf.yaml') | from_yaml }}"
+

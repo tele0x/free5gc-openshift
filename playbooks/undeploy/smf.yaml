@@ -1,0 +1,35 @@
+# 
+# Undeploy SMF
+---
+- hosts: localhost
+  tasks:
+  - name: Login
+    include_tasks: ../login.yml
+
+  - name: Remove SMF config map
+    kubernetes.core.k8s:
+      state: absent
+      api_key: "{{ k8s_auth_result.k8s_auth.api_key }}"
+      api_version: v1
+      kind: ConfigMap
+      name: smf-config
+      namespace: "{{ openshift.namespace }}"
+      
+  - name: Remove SMF NF
+    kubernetes.core.k8s:
+      state: absent
+      api_key: "{{ k8s_auth_result.k8s_auth.api_key }}"
+      api_version: v1
+      kind: Pod
+      name: smf
+      namespace: "{{ openshift.namespace }}"
+
+  - name: Remove SMF service
+    kubernetes.core.k8s:
+      state: absent
+      api_key: "{{ k8s_auth_result.k8s_auth.api_key }}"
+      api_version: v1
+      kind: Service
+      name: smf-svc
+      namespace: "{{ openshift.namespace }}"
+

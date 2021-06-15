@@ -1,0 +1,13 @@
+kind: Service
+apiVersion: v1
+metadata:
+  name: smf-svc
+  namespace: {{ openshift.namespace }}
+spec:
+  selector:
+    app: smf
+  ports:
+  - protocol: TCP
+    targetPort: {{ nodes.smf.port }}
+    port: {{ nodes.smf.port }}
+

@@ -1,0 +1,27 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: nrf
+  namespace: {{ openshift.namespace }}
+  labels:
+    app: nrf
+spec:
+  {{ nodes.nrf.custom }}
+  containers:
+  - name: nrf
+    image: {{ nodes.nrf.image }}
+    command:
+      - /free5gc/bin/./nrf
+    ports:
+      - containerPort: {{ nodes.nrf.port }}
+    volumeMounts:
+      - name: conf
+        mountPath: /free5gc/config/nrfcfg.yaml
+        subPath: nrfcfg.yaml
+  volumes:
+    - name: conf
+      configMap:
+        name: nrf-config
+        items:
+        - key: nrfcfg.yaml
+          path: nrfcfg.yaml

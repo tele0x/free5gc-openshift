@@ -1,0 +1,19 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: mongodb
+  namespace: {{ openshift.namespace }}
+  labels:
+    app: mongo
+spec:
+  {{ nodes.mongo.custom }}
+  containers:
+  - name: mongodb
+    image: mongo:3.6.3
+    command:
+      - mongod
+    args:
+      - "--bind_ip=0.0.0.0"
+    ports:
+      - containerPort: {{ nodes.mongo.port }}
+

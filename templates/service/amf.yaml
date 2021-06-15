@@ -1,0 +1,13 @@
+kind: Service
+apiVersion: v1
+metadata:
+  name: amf-svc
+  namespace: {{ openshift.namespace }}
+spec:
+  selector:
+    app: amf
+  ports:
+  - protocol: TCP
+    targetPort: {{ nodes.amf.port }}
+    port: {{ nodes.amf.port }}
+

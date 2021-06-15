@@ -1,0 +1,35 @@
+# 
+# Undeploy NSSF
+---
+- hosts: localhost
+  tasks:
+  - name: Login
+    include_tasks: ../login.yml
+
+  - name: Remove NSSF config map
+    kubernetes.core.k8s:
+      state: absent
+      api_key: "{{ k8s_auth_result.k8s_auth.api_key }}"
+      api_version: v1
+      kind: ConfigMap
+      name: nssf-config
+      namespace: "{{ openshift.namespace }}"
+      
+  - name: Remove NSSF NF
+    kubernetes.core.k8s:
+      state: absent
+      api_key: "{{ k8s_auth_result.k8s_auth.api_key }}"
+      api_version: v1
+      kind: Pod
+      name: nssf
+      namespace: "{{ openshift.namespace }}"
+
+  - name: Remove NSSF service
+    kubernetes.core.k8s:
+      state: absent
+      api_key: "{{ k8s_auth_result.k8s_auth.api_key }}"
+      api_version: v1
+      kind: Service
+      name: nssf-svc
+      namespace: "{{ openshift.namespace }}"
+

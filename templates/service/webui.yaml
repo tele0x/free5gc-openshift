@@ -1,0 +1,13 @@
+kind: Service
+apiVersion: v1
+metadata:
+  name: webui-svc
+  namespace: {{ openshift.namespace }}
+spec:
+  selector:
+    app: webui
+  ports:
+  - protocol: TCP
+    targetPort: {{ nodes.webui.port }}
+    port: {{ nodes.webui.port }}
+

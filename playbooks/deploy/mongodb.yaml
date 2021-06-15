@@ -1,0 +1,20 @@
+# 
+# Deploy MongoDB
+---
+- hosts: localhost
+  tasks:
+  - name: Login
+    include_tasks: ../login.yml
+
+  - name: Deploy MongoDB
+    kubernetes.core.k8s:
+        api_key: "{{ k8s_auth_result.k8s_auth.api_key }}"
+        state: present
+        definition: "{{ lookup('template', '../../templates/deployment/mongodb.yaml') | from_yaml }}"
+
+  - name: Create MongoDB Service
+    kubernetes.core.k8s:
+        api_key: "{{ k8s_auth_result.k8s_auth.api_key }}"
+        state: present
+        definition: "{{ lookup('template', '../../templates/service/mongodb.yaml') | from_yaml }}"
+

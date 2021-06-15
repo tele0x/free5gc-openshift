@@ -1,0 +1,26 @@
+# 
+# Check NFs registration, get variable from
+---
+- hosts: localhost
+
+  tasks:
+  - name: Login
+    include_tasks: login.yml
+
+  - name: Login to mongo pod and get {{ current_cnf }} instance ID
+    kubernetes.core.k8s_exec:
+      host: "{{ openshift.api_url }}" 
+      api_key: "{{ k8s_auth_result.k8s_auth.api_key }}"
+      validate_certs: no
+      namespace: "{{ openshift.namespace }}"
+      pod: mongodb
+      #command: "mongo free5gc --quiet --eval 'db.NfProfile.find({\"nfType\": \"NSSF\"}).pretty()' | grep nfInstanceId | cut -d':' -f2 | sed -e 's/ \"(.*)\",/\\1/g'"
+      command: "mongo free5gc --quiet --eval 'db.NfProfile.find({\"nfType\": \"{{current_cnf}}\"}, { nfInstanceId: 1, _id: 0})'"    
+    register: result
+    until: "'(result.stdout | from_json).nfInstanceId' != ''"
+    retries: 5
+    delay: 10
+
+  - name: debug
+    debug:
+      msg: "{{ (result.stdout | from_json).nfInstanceId }}"

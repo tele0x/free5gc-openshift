@@ -1,0 +1,13 @@
+kind: Service
+apiVersion: v1
+metadata:
+  name: ausf-svc
+  namespace: {{ openshift.namespace }}
+spec:
+  selector:
+    app: ausf
+  ports:
+  - protocol: TCP
+    targetPort: {{ nodes.ausf.port }}
+    port: {{ nodes.ausf.port }}
+
