@@ -4,7 +4,7 @@ metadata:
   name: smf
   namespace: {{ openshift.namespace }}
   annotations:
-    k8s.v1.cni.cncf.io/networks: '{{ add_network | to_json }}'
+    k8s.v1.cni.cncf.io/networks: '[{ "name": "net-pfcp", "ips": [ "{{ nodes.smf.pfcp.ip }}" ], "mac": "{{ nodes.smf.pfcp.mac }}"}]'
   labels:
     app: smf
 spec:

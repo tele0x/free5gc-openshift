@@ -2,12 +2,7 @@
 # Deploy SMF
 ---
 - hosts: localhost
-  vars:
-    add_network: 
-          '[{ "name": "5g-net", 
-          "ips": [ "{{ nodes.smf.ip }}/24" ],
-          "mac": "{{ nodes.smf.mac }}"
-          }]'
+  
   tasks:
   - name: Login
     include_tasks: ../login.yml

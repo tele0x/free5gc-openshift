@@ -2,12 +2,7 @@
 # Deploy AMF
 ---
 - hosts: localhost
-  vars:
-    add_network: 
-          '[{ "name": "5g-net", 
-          "ips": [ "{{ nodes.amf.ip }}/24" ],
-          "mac": "{{ nodes.amf.mac }}"
-          }]'
+  
   tasks:
   - name: Login
     include_tasks: ../login.yml

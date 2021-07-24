@@ -43,14 +43,14 @@ data:
                 ipv6: 2001:4860:4860::8888
               ueSubnet: 60.61.0.0/16 # should be CIDR type
       pfcp: # the IP address of N4 interface on this SMF (PFCP)
-        addr: {{ nodes.smf.ip }}
+        addr: {{ nodes.smf.pfcp.ip }}
       userplane_information: # list of userplane information
         up_nodes: # information of userplane node (AN or UPF)
           gNB1: # the name of the node
             type: AN # the type of the node (AN or UPF)
           UPF:  # the name of the node
             type: UPF # the type of the node (AN or UPF)
-            node_id: {{ nodes.upf.ip }} # the IP/FQDN of N4 interface on this UPF (PFCP)
+            node_id: {{ nodes.upf.pfcp.ip }} # the IP/FQDN of N4 interface on this UPF (PFCP)
             sNssaiUpfInfos: # S-NSSAI information list for this UPF
               - sNssai: # S-NSSAI (Single Network Slice Selection Assistance Information)
                   sst: 1 # Slice/Service Type (uinteger, range: 0~255)
@@ -65,7 +65,7 @@ data:
             interfaces: # Interface list for this UPF
               - interfaceType: N3 # the type of the interface (N3 or N9)
                 endpoints: # the IP address of this N3/N9 interface on this UPF
-                  - {{ nodes.upf.ip }}
+                  - {{ nodes.upf.gtp.ip }}
                 networkInstance: internet # Data Network Name (DNN)
         links: # the topology graph of userplane, A and B represent the two nodes of each link
           - A: gNB1

@@ -4,7 +4,9 @@ metadata:
   name: ransim
   namespace: {{ openshift.namespace }}
   annotations:
-    k8s.v1.cni.cncf.io/networks: '{{ add_network | to_json }}'
+    k8s.v1.cni.cncf.io/networks: '[{ "name": "net-ran", "ips": [ "{{ nodes.ransim.ran.ip }}" ], "mac": "{{ nodes.ransim.ran.mac }}"},
+    { "name": "net-ngap", "ips": [ "{{ nodes.ransim.ngap.ip }}" ], "mac": "{{ nodes.ransim.ngap.mac }}"},
+    { "name": "net-gtp", "ips": [ "{{ nodes.ransim.gtp.ip }}" ], "mac": "{{ nodes.ransim.gtp.mac }}"}]'
 spec:
   {{ nodes.ransim.custom }}
   containers:

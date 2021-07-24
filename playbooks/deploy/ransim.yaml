@@ -2,12 +2,7 @@
 # Deploy RAN Simulator
 ---
 - hosts: localhost
-  vars:
-    add_network: 
-          '[{ "name": "5g-net", 
-          "ips": [ "{{ nodes.ransim.ip }}/24" ],
-          "mac": "{{ nodes.ransim.mac }}"
-          }]'
+  
   tasks:
   - name: Login
     include_tasks: ../login.yml

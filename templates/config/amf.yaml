@@ -12,7 +12,7 @@ data:
     configuration:
       amfName: AMF # the name of this AMF
       ngapIpList:  # the IP list of N2 interfaces on this AMF
-        - {{ nodes.amf.ip }}
+        - {{ nodes.amf.ngap.ip }}
       sbi: # Service-based interface information
         scheme: http # the protocol for sbi (http or https)
         registerIPv4: amf-svc # IP used to register to NRF

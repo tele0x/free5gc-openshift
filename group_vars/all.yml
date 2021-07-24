@@ -80,33 +80,55 @@ nodes:
     custom: "{{ default_custom_spec }}"
   
   amf:
-    ip: "192.168.5.10"
-    mac: "CA:FE:C0:FF:EE:10"
+    ngap:
+      ip: "192.168.5.10"
+      netmask: 24
+      mac: "CA:FE:C0:FF:EE:10"
     port: 29518
     image: "{{ default_image }}"
     custom: "{{ default_custom_spec }}"
   
   smf:
-    ip: "192.168.5.15"
-    mac: "CA:FE:C0:FF:EE:15"
+    pfcp:
+      ip: "192.168.7.15"
+      netmask: 24
+      mac: "CA:FE:C0:FF:BE:15"
     port: 29502
     image: "{{ default_image }}"
     custom: "{{ default_custom_spec }}"
 
   upf:
-    ip: "192.168.5.18"
-    mac: "CA:FE:C0:FF:EE:18"
+    gtp:
+      ip: "192.168.6.18"
+      netmask: 24
+      mac: "CA:FE:C0:FF:AE:18"
+    pfcp:
+      ip: "192.168.7.18"
+      netmask: 24
+      mac: "CA:FE:C0:FF:BE:18"
     image: quay.io/ferossi/free5gc-upf:0.1
     custom: "{{ default_custom_spec }}"
 
   ransim:
-    ip: "192.168.5.20"
-    mac: "CA:FE:C0:FF:EE:20"
+    ngap:
+      ip: "192.168.5.20"
+      netmask: 24
+      mac: "CA:FE:C0:FF:EE:20"
+    gtp:
+      ip: "192.168.6.20"
+      netmask: 24
+      mac: "CA:FE:C0:FF:BE:20"
+    ran:
+      ip: "192.168.8.20"
+      netmask: 24
+      mac: "CA:FE:C0:FF:CE:20"
     image: quay.io/ferossi/ueransim:0.1
     custom: "{{ default_custom_spec }}"
 
   uesim:
-    ip: "192.168.5.21"
-    mac: "CA:FE:C0:FF:EE:21"
+    ran:
+      ip: "192.168.8.21"
+      netmask: 24
+      mac: "CA:FE:C0:FF:EE:21"
     image: quay.io/ferossi/ueransim:0.1
     custom: "{{ default_custom_spec }}"

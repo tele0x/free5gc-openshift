@@ -4,7 +4,7 @@ metadata:
   name: amf
   namespace: {{ openshift.namespace }}
   annotations:
-    k8s.v1.cni.cncf.io/networks: '{{ add_network | to_json }}'
+    k8s.v1.cni.cncf.io/networks: '[{ "name": "net-ngap", "ips": [ "{{ nodes.amf.ngap.ip }}" ], "mac": "{{ nodes.amf.ngap.mac }}"}]'
   labels:
     app: amf
 spec:

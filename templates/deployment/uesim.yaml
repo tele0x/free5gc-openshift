@@ -4,7 +4,7 @@ metadata:
   name: uesim
   namespace: {{ openshift.namespace }}
   annotations:
-    k8s.v1.cni.cncf.io/networks: '{{ add_network | to_json }}'
+    k8s.v1.cni.cncf.io/networks: '[{ "name": "net-ran", "ips": [ "{{ nodes.uesim.ran.ip }}" ], "mac": "{{ nodes.uesim.ran.mac }}"}]'
 spec:
   {{ nodes.uesim.custom }}
   containers:

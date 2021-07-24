@@ -2,12 +2,7 @@
 # Deploy NSSF
 ---
 - hosts: localhost
-  vars:
-    add_network: 
-          '[{ "name": "5g-net", 
-          "ips": [ "{{ nodes.nssf.ip }}/24" ],
-          "mac": "{{ nodes.nssf.mac }}"
-          }]'
+  
   tasks:
   - name: Login
     include_tasks: ../login.yml

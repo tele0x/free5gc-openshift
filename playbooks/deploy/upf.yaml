@@ -2,12 +2,7 @@
 # Deploy UPF
 ---
 - hosts: localhost
-  vars:
-    add_network: 
-          '[{ "name": "5g-net", 
-          "ips": [ "{{ nodes.upf.ip }}/24" ],
-          "mac": "{{ nodes.upf.mac }}"
-          }]'
+  
   tasks:
   - name: Login
     include_tasks: ../login.yml
