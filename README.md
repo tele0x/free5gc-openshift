@@ -114,7 +114,7 @@ $ python3 -m venv 5genv
 $ . 5genv/bin/activate
 $ cd free5gc-openshift
 $ pip3 install -r requirements.txt
-$ ansible-galaxy install -r collections/requirements.txt
+$ ansible-galaxy install -r collections/requirements.yaml
 ```
 
 This should get you up and running with the environment.
