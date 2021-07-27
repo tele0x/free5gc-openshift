@@ -38,7 +38,15 @@ Optionally you can build and customize your own container images.
 
 ![OpenShift Free5GC Architecture](img/free5gc_openshift_architecture.png?raw=true "OpenShift Free5GC Architecture")
 
-Both core and RAN are deployed in the same cluster and namespace, using the ansible script is easy to deploy specific components on another cluster, for example to have a Core and Edge cluster. There is currently no segmentation between SMF <-> UPF N4 PFCP interface, for N1 N2 N3 the network is 192.168.5.0/24
+Both core and RAN are deployed in the same cluster and namespace, using the ansible script is easy to deploy specific components on another cluster, for example to have a Core and Edge cluster. 
+Network segmentation is implemented and configurable. The SBI (Service Based Interface) using HTTP2 uses `Services` while N1,N2,N3,N4 are on additional networks.
+
+| Network Name | Link | Interface | Network | Netmask
+| ------------ | ----------- | --------- | ------- | -------
+| net-ran | UE<->gNB | N1 | 192.168.8.0 | 255.255.255.0
+| net-ngap | gNB<->AMF (NGAP) | N2 | 192.168.5.0 | 255.255.255.0
+| net-gtp | gNB<->UPF (GTP) | N3 | 192.168.6.0 | 255.255.255.0
+| net-pfcp | UPF<->SMF (PFCP) | N4 | 192.168.7.0 | 255.255.255.0
 
 
 ## (Optional) Build container images
@@ -124,8 +132,7 @@ $ ./deploy.sh test
 ```
 
 Initialize networking deployment, this will configure networking in the cluster
-
-NOTE: This will reboot all your worker nodes one at the time to apply the changes.
+NOTE: This will reboot all your worker nodes one at the time to apply the changes to enable SCTP.
 
 ```
 $ ./deploy.sh init
@@ -148,12 +155,21 @@ Check resources are correctly created with:
 
 ```
 $ oc get nncp
-$ oc get networks.operator.openshift.io cluster -o yaml
-$ oc get network-attachment-definitions.k8s.cni.cncf.io -n 5gcore
+NAME         STATUS
+bridge-br1   SuccessfullyConfigured
 ```
 
-The bridge-br1 nncp should show *SuccessfullyConfigured*
-*5g-net* and *bridge-net* should be listed as additional network attachment
+The bridge-br1 nncp should show *SuccessfullyConfigured*.
+Additional networks:
+
+```
+$ oc get net-attach-def -n 5gcore
+NAME          AGE
+net-gtp       3d14h
+net-ngap      3d14h
+net-pfcp      3d14h
+net-ran       3d14h
+```
 
 Deploy all components:
 
