@@ -141,25 +141,47 @@ $ ./deploy.sh init
 Network initialization workflow:
 
   - playbooks/init/00_create_namespace.yml 
-     - Create *5gcore* namespace. 
-  - playbooks/init/01_initialize_cnv_network.yml 
-     - Create *NodeNetworkConfigurationPolicy*.
-     - Add a new bridge interface to worker nodes.
-     - Create *NetworkAttachmentDefinition* used in VM manifest to attach the VM to the secondary network.
+     - Create *5gcore* namespace
+  - playbooks/init/01-load-gtp5g.yaml 
+     - Load GTP5G kernel module
   - playbooks/init/02_initialize_network.yml 
      - Add additional macvlan network called *5g-net* to the cluster
   - playbooks/init/03_initialize_sctp_proto.yml 
-      Create *MachineConfig* to load SCTP kernel module on worker nodes
+     - Create *MachineConfig* to load SCTP kernel module on worker nodes
 
-Check resources are correctly created with:
+Check resources are correctly created
+GTP5G Kernel module:
 
 ```
-$ oc get nncp
-NAME         STATUS
-bridge-br1   SuccessfullyConfigured
+$ oc get pods -n gtp5g-driver
+NAME                                READY   STATUS    RESTARTS   AGE
+gtp5g-kmod-driver-container-7psd9   1/1     Running   0          20h
+gtp5g-kmod-driver-container-ffxll   1/1     Running   0          20h
+gtp5g-kmod-driver-container-tbv92   1/1     Running   0          20h
+
+$ oc logs -f gtp5g-kmod-driver-container-7psd9 -n gtp5g-driver
+gtp5g                 118784  0
+udp_tunnel             20480  2 gtp5g,vxlan
+Unloading module
+Loading gtp5g module..
+Module loaded: 
+gtp5g                 118784  0
+udp_tunnel             20480  2 gtp5g,vxlan
+filename:       /lib/modules/4.18.0-305.19.1.el8_4.x86_64/kernel/drivers/net/gtp5g.ko
+alias:          net-pf-16-proto-16-family-gtp5g
+alias:          rtnl-link-gtp5g
+version:        1.0.3b
+description:    Interface for 5G GTP encapsulated traffic
+author:         Muthuraman <muthuramane.cs03g@g2.nctu.edu.tw>
+author:         Yao-Wen Chang <yaowenowo@gmail.com>
+license:        GPL
+rhelversion:    8.4
+srcversion:     D93DAC9B9735453E689040C
+depends:        udp_tunnel
+name:           gtp5g
+vermagic:       4.18.0-305.19.1.el8_4.x86_64 SMP mod_unload modversions 
 ```
 
-The bridge-br1 nncp should show *SuccessfullyConfigured*.
 Additional networks:
 
 ```
@@ -204,7 +226,7 @@ smf                          1/1     Running   0          4m16s
 udm                          1/1     Running   0          5m17s
 udr                          1/1     Running   0          5m10s
 uesim                        1/1     Running   0          3m15s
-virt-launcher-upf-vm-fkgtq   2/2     Running   0          7m51s
+upf                          1/1     Running   0          7m51s
 webui                        1/1     Running   0          3m59s
 ```
 
@@ -252,65 +274,17 @@ PING 8.8.8.8 (8.8.8.8) from 60.60.0.1 uesimtun0: 56(84) bytes of data.
 rtt min/avg/max/mdev = 6.889/8.053/9.338/1.008 ms```
 ```
 
-Login on the UPF, you can use any node and SSH to 192.168.5.18 using as username *free5gc*
+Login on the UPF
 
 ```
-$ oc exec -ti uesim -- /bin/bash
-[root@uesim UERANSIM]# ssh free5gc@192.168.5.18
-The authenticity of host '192.168.5.18 (192.168.5.18)' can't be established.
-ECDSA key fingerprint is SHA256:fO56Pvx1tXCrOAVqp2a7sGGov53ttsIvVqYs78XkgLM.
-Are you sure you want to continue connecting (yes/no/[fingerprint])? yes
-Warning: Permanently added '192.168.5.18' (ECDSA) to the list of known hosts.
-free5gc@192.168.5.18's password: 
-Last login: Wed Mar 31 16:28:10 2021
-[free5gc@upf-vm ~]$
-```
-
-Sudo and install tcpdump
-
-```
-[root@upf-vm free5gc]# dnf install tcpdump
-Last metadata expiration check: 0:01:54 ago on Fri May 28 21:03:21 2021.
-Dependencies resolved.
-=========================================================================================================
- Package               Architecture         Version                          Repository             Size
-=========================================================================================================
-Installing:
- tcpdump               x86_64               14:4.9.3-1.fc30                  updates               432 k
-
-Transaction Summary
-=========================================================================================================
-Install  1 Package
-
-Total download size: 432 k
-Installed size: 1.5 M
-Is this ok [y/N]: y
-Downloading Packages:
-tcpdump-4.9.3-1.fc30.x86_64.rpm                                          2.6 MB/s | 432 kB     00:00    
----------------------------------------------------------------------------------------------------------
-Total                                                                    1.2 MB/s | 432 kB     00:00     
-Running transaction check
-Transaction check succeeded.
-Running transaction test
-Transaction test succeeded.
-Running transaction
-  Preparing        :                                                                                 1/1 
-  Running scriptlet: tcpdump-14:4.9.3-1.fc30.x86_64                                                  1/1 
-  Installing       : tcpdump-14:4.9.3-1.fc30.x86_64                                                  1/1 
-  Running scriptlet: tcpdump-14:4.9.3-1.fc30.x86_64                                                  1/1 
-  Verifying        : tcpdump-14:4.9.3-1.fc30.x86_64                                                  1/1 
-
-Installed:
-  tcpdump-14:4.9.3-1.fc30.x86_64                                                                         
-
-Complete!
-[root@upf-vm free5gc]# 
+$ oc exec -ti upf -- /bin/bash
+[free5gc@upf ~]#
 ```
 
 On another terminal run the ping command from uesim pod while running tcpdump on UPF GTP interface *upfgtp*
 
 ```
-[root@upf-vm free5gc]# tcpdump -i upfgtp
+[root@upf free5gc]# tcpdump -i upfgtp
 dropped privs to tcpdump
 tcpdump: verbose output suppressed, use -v or -vv for full protocol decode
 listening on upfgtp, link-type RAW (Raw IP), capture size 262144 bytes
@@ -329,7 +303,7 @@ listening on upfgtp, link-type RAW (Raw IP), capture size 262144 bytes
 Run tcpdump on the pod interface filtering on icmp traffic (DN interface).
 
 ```
-[root@upf-vm free5gc]# tcpdump -i eth0 icmp
+[root@upf free5gc]# tcpdump -i eth0 icmp
 dropped privs to tcpdump
 tcpdump: verbose output suppressed, use -v or -vv for full protocol decode
 listening on eth0, link-type EN10MB (Ethernet), capture size 262144 bytes

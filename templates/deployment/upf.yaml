@@ -1,82 +1,45 @@
-apiVersion: kubevirt.io/v1alpha3
-kind: VirtualMachine
+apiVersion: v1
+kind: Pod
 metadata:
- name: upf-vm
- namespace: {{ openshift.namespace }}
- labels:
-   app: upf-vm
+  name: upf
+  namespace: {{ openshift.namespace }}
+  annotations:
+    k8s.v1.cni.cncf.io/networks: '[{ "name": "net-pfcp", "ips": [ "{{ nodes.upf.pfcp.ip }}" ], "mac": "{{ nodes.upf.pfcp.mac }}"},
+                                   { "name": "net-gtp", "ips": [ "{{ nodes.upf.gtp.ip }}" ], "mac": "{{ nodes.upf.gtp.mac }}"}]'
+  labels:
+    app: upf
 spec:
- {{ nodes.upf.custom }}
- running: true
- template:
-   metadata:
-     labels:
-       kubevirt.io/domain: upf-vm
-       vm.kubevirt.io/name: upf-vm
-       debugLogs: "true"
-   spec:
-     domain:
-       cpu:
-         cores: 1
-         sockets: 1
-         threads: 1
-       devices:
-         disks:
-           - name: containerdisk
-             disk:
-               bus: virtio
-           - name: cloudinitdisk
-             disk:
-               bus: virtio
-         interfaces:
-           - name: nic-0
-             masquerade: {}
-             model: virtio
-           - name: upf-n3-ext
-             bridge: {}
-             model: virtio
-           - name: upf-n4-int
-             bridge: {}
-             model: virtio
-         networkInterfaceMultiqueue: true
-         rng: {}
-       resources:
-         requests:
-           memory: 1Gi
-     evictionStrategy: LiveMigrate
-     hostname: upf-vm
-     networks:
-       - name: nic-0
-         pod: {}
-       - name: upf-n3-ext
-         multus:
-           networkName: net-gtp
-       - name: upf-n4-int
-         multus:
-           networkName: net-pfcp
-     terminationGracePeriodSeconds: 180
-     volumes:
-       - name: containerdisk
-         containerDisk:
-               image: {{ nodes.upf.image }}
-       - name: cloudinitdisk
-         cloudInitNoCloud:
-           userData: |-
-             #!/bin/bash
-             nmcli con add con-name eth1 ifname eth1 type ethernet ip4 {{ nodes.upf.pfcp.ip }}/{{ nodes.upf.pfcp.netmask }}
-             nmcli con up eth1
-             nmcli con add con-name eth2 ifname eth2 type ethernet ip4 {{ nodes.upf.gtp.ip }}/{{ nodes.upf.gtp.netmask }}
-             nmcli con up eth2
-             echo 1 > /proc/sys/net/ipv4/ip_forward
-             # Allow password based ssh
-             sed -e 's/PasswordAuthentication no/PasswordAuthentication yes/g' -i /etc/ssh/sshd_config
-             systemctl restart sshd
-             # Configure UPF
-             sed -e '1, /127.0.0.8/ s/127.0.0.8/{{ nodes.upf.pfcp.ip }}/' -e '2, /127.0.0.8/ s/127.0.0.8/{{ nodes.upf.gtp.ip }}/' -i /free5gc/NFs/upf/build/config/upfcfg.yaml
-             sed -e '/.*cidr.*/a \     \ natifname: eth0' -i /free5gc/NFs/upf/build/config/upfcfg.yaml
-             screen -d -m /free5gc/NFs/upf/build/bin/free5gc-upfd -f /free5gc/NFs/upf/build/config/upfcfg.yaml
-             # Add NAT and packet forwarding between GTP tunnel and internet interface
-             iptables -A FORWARD -i eth0 -j ACCEPT
-             iptables -A FORWARD -i upfgtp -j ACCEPT
-             iptables -t nat -A POSTROUTING -o eth0 -j MASQUERADE
-             iptables -t nat -A POSTROUTING -o upfgtp -j MASQUERADE
+  {{ nodes.upf.custom }}
+  containers:
+  - name: upf
+    image: {{ nodes.upf.image }}
+    command: ["/bin/sh", "-c" ]
+    args:
+      - dnf -y install iptables http://mirror.centos.org/centos/8/AppStream/x86_64/os/Packages/tcpdump-4.9.3-1.el8.x86_64.rpm;
+        iptables -A FORWARD -i eth0 -j ACCEPT;
+        iptables -A FORWARD -i upfgtp -j ACCEPT;
+        iptables -t nat -A POSTROUTING -o eth0 -j MASQUERADE;
+        iptables -t nat -A POSTROUTING -o upfgtp -j MASQUERADE;
+        /free5gc/NFs/upf/build/bin/free5gc-upfd -f /free5gc/NFs/upf/build/config/upfcfg.yaml
+    volumeMounts:
+      - name: conf
+        mountPath: /free5gc/NFs/upf/build/config/upfcfg.yaml
+        subPath: upfcfg.yaml
+      - name: net
+        mountPath: /dev/net
+    securityContext:
+      privileged: true
+      capabilities:
+        add:
+        - NET_ADMIN
+  volumes:
+    - name: conf
+      configMap:
+        name: upf-config
+        items:
+        - key: upfcfg.yaml
+          path: upfcfg.yaml
+    - hostPath:
+        path: /dev/net
+        type: ""
+      name: net

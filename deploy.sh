@@ -10,14 +10,7 @@ case "$1" in
 	"init")
 		echo -e "Initialize networking"
 		ansible-playbook -i localhost playbooks/init/00-create-namespace.yaml
-		ansible-playbook -i localhost playbooks/init/01-initialize-cnv-network.yaml
-		echo -e "Wait for NNCP configuration to be applied"
-		retry=0
-		until [ "$retry" -ge 5 ]; do
-			if oc get nncp bridge-br1 | grep SuccessfullyConfigured; then echo 'NNCP Ready!' && break ; else echo -e "[$retry] NNCP not ready, retry in 15 sec.." ; fi
-			retry=$((retry+1))
-			sleep 15
-		done
+		ansible-playbook -i localhost playbooks/init/01-load-gtp5g.yaml
 		ansible-playbook -i localhost playbooks/init/02-initialize-network.yaml
 		ansible-playbook -i localhost playbooks/init/03-initialize-sctp-proto.yaml
 		echo -e "##########################################################\n"
@@ -31,10 +24,6 @@ case "$1" in
 			echo -e "Deploy 5G Core NFs: $nf"
 			ansible-playbook -i localhost playbooks/deploy/$nf.yaml
 			case "$nf" in
-				"upf")
-					echo -e "Wait 1 minute for UPF to download image and boot up"
-					sleep 60
-					;;
 				"mongodb" | "nrf" | "udr")
 					echo -e "Wait 30 seconds"
 					sleep 30

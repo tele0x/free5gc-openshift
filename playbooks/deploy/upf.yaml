@@ -7,6 +7,13 @@
   - name: Login
     include_tasks: ../login.yml
 
+  - name: Create UPF config map
+    kubernetes.core.k8s:
+        api_key: "{{ k8s_auth_result.k8s_auth.api_key }}"
+        state: present
+        definition: "{{ lookup('template', '../../templates/config/upf.yaml') | from_yaml }}"
+
+
   - name: Deploy UPF
     kubernetes.core.k8s:
         api_key: "{{ k8s_auth_result.k8s_auth.api_key }}"
