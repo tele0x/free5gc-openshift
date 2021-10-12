@@ -19,7 +19,7 @@
 ## Introduction
 
 Free5GC-OpenShift is an open-source project to deploy a working 5G Core network using [Free5GC](https://github.com/free5gc/free5gc) on Red Hat OpenShift Container Platform. This project can be used for testing and learning 5G protocols. A containerized gNB and UE ([UERANSIM](https://github.com/aligungr/UERANSIM) is deployed for E2E data connection testing.
-The base container image for the components is Red Hat UBI 8. The UPF in Free5GC requires [GTP5G](https://github.com/PrinzOwO/gtp5g) a kernel module that implements kernel-side GTP-U plane, works on 5.x kernel versions, as OpenShift uses RHCOS with kernel 4.18.x UPF will run as a CNV (Container Native Virtualization) using OpenShift Virtualization. 
+The base container image for the components is Red Hat UBI 8. The UPF in Free5GC requires [GTP5G](https://github.com/PrinzOwO/gtp5g) a kernel module that implements kernel-side GTP-U plane, the module is backported on kernel 4.18.x in order to work with Red Hat CoreOS. 
 Optionally you can build and customize your own container images.
 
 ## Prerequisities
