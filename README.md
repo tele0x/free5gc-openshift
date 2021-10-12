@@ -26,7 +26,6 @@ Optionally you can build and customize your own container images.
 
   - Ansible (tested on version 2.10.0)
   - A running OpenShift cluster with reachable API URL
-  - [OpenShift Virtualization](https://docs.openshift.com/container-platform/4.7/virt/install/installing-virt-web.html) installed (Note: you don't need baremetal it works with nested-virtualization too)
 
 (Optional) To build the container images:
 
