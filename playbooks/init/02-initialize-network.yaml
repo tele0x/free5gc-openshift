@@ -2,11 +2,30 @@
 # Create new networks on OpenShift
 ---
 - hosts: localhost
+  vars:
+    net_dict:    
+      net-ngap: 192.168.5.0/24
+      net-gtp: 192.168.6.0/24
+      net-pfcp: 192.168.7.0/24
+      net-ran: 192.168.8.0/24
+    spec_string: |-
+        {
+            "cniVersion": "0.3.1",
+            "name": "{{ item.key }}",
+            "type": "macvlan",
+            "master": "{{ openshift.host_ifname }}",
+            "mode": "bridge",
+            "ipam": {
+              "type": "host-local",
+              "subnet": "{{ item.value }}"
+            }
+        }
+
   tasks:
   - name: Login
     include_tasks: ../login.yml
 
-  - name: Create gNB-AMF NGAP Network (N2 Interface)
+  - name: Create additional networks on OpenShift
     k8s:
       state: present
       apply: yes
@@ -17,98 +36,8 @@
         apiVersion: "k8s.cni.cncf.io/v1"
         kind: NetworkAttachmentDefinition
         metadata:
-          name: net-ngap
+          name: "{{ item.key }}"
           namespace: 5gcore
         spec:
-          config: '{
-            "cniVersion": "0.3.0",
-            "name": "net-ngap",
-            "type": "bridge",
-            "bridge": "br1",
-            "isGateway": false,
-            "ipam": {
-             "type": "host-local",
-             "subnet": "192.168.5.0/24"
-            }
-        }'
-  
-  - name: Create UPF-GTPU Network (N3 Interface)
-    k8s:
-      state: present
-      apply: yes
-      host: "{{ openshift.api_url }}" 
-      api_key: "{{ k8s_auth_result.k8s_auth.api_key }}"
-      validate_certs: no
-      definition:
-        apiVersion: "k8s.cni.cncf.io/v1"
-        kind: NetworkAttachmentDefinition
-        metadata:
-          name: net-gtp
-          namespace: 5gcore
-        spec:
-          config: '{
-            "cniVersion": "0.3.0",
-            "name": "net-gtp",
-            "type": "bridge",
-            "bridge": "br1",
-            "isGateway": false,
-            "ipam": {
-             "type": "host-local",
-             "subnet": "192.168.6.0/24"
-            }
-        }'
-
-  - name: Create UPF-PFCP Network (N4 Interface)
-    k8s:
-      state: present
-      apply: yes
-      host: "{{ openshift.api_url }}" 
-      api_key: "{{ k8s_auth_result.k8s_auth.api_key }}"
-      validate_certs: no
-      definition:
-        apiVersion: "k8s.cni.cncf.io/v1"
-        kind: NetworkAttachmentDefinition
-        metadata:
-          name: net-pfcp
-          namespace: 5gcore
-        spec:
-          config: '{
-            "cniVersion": "0.3.0",
-            "name": "net-pfcp",
-            "type": "bridge",
-            "bridge": "br1",
-            "isGateway": false,
-            "ipam": {
-             "type": "host-local",
-             "subnet": "192.168.7.0/24"
-            }
-        }'
-
-  - name: Create RAN Network (N1 Interface)
-    k8s:
-      state: present
-      apply: yes
-      host: "{{ openshift.api_url }}" 
-      api_key: "{{ k8s_auth_result.k8s_auth.api_key }}"
-      validate_certs: no
-      definition:
-        apiVersion: "k8s.cni.cncf.io/v1"
-        kind: NetworkAttachmentDefinition
-        metadata:
-          name: net-ran
-          namespace: 5gcore
-        spec:
-          config: '{
-            "cniVersion": "0.3.0",
-            "name": "net-ran",
-            "type": "bridge",
-            "bridge": "br1",
-            "isGateway": false,
-            "ipam": {
-             "type": "host-local",
-             "subnet": "192.168.8.0/24"
-            }
-        }'
-
-
-
+          config: "{{ spec_string | to_json }}"
+    loop: "{{ net_dict | dict2items }}"

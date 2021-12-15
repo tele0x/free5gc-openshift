@@ -130,6 +130,9 @@ You can test OCP cluster login is working by running:
 $ ./deploy.sh test
 ```
 
+Edit *group_vars/all.yml* and change openshift *host_ifname*. This is the interface you wish to use for macvlan driver.
+NOTE: If your cluster is running on VMware ESXi hypervisor, you would have to update the vCenter distributed port group security settings to Allow Promiscious mode, Mac address changes and Forged Transmits for macvlan traffic to flow between OCP nodes.
+
 Initialize networking deployment, this will configure networking in the cluster
 NOTE: This will reboot all your worker nodes one at the time to apply the changes to enable SCTP.
 

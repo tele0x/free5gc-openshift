@@ -26,9 +26,9 @@ openshift:
   password: tele
   namespace: 5gcore
   
-  # This is the host interface on the worker node where we bridge our additional network used by the UPF CNV (Container Native Virtualization)
-  # This variable is used in the script playbooks/init/01_initialize_cnv_network.yaml
-  host_ifname: ens3
+  # This is the host interface on the worker node where we bridge our additional network used by the UPF pod. If second interface not available, provide name for primary interface.
+  # This variable is used in the script playbooks/init/02-initialize-network.yaml
+  host_ifname: enp1s0
 
 default_image: quay.io/ferossi/free5gc-aio:0.1
 
